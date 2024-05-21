@@ -71,10 +71,12 @@ const ImageSelector: FC<Props> = ({ onSelect, onClose }) => {
 
   const { data: settings, isLoading: isSettingsLoading } = useSettings();
 
-  const { data: linuxContainerImages = [], isLoading: isLciLoading } = useQuery({
-    queryKey: [queryKeys.images, linuxContainersServer],
-    queryFn: () => loadImages(linuxContainersJson, linuxContainersServer),
-  });
+  const { data: linuxContainerImages = [], isLoading: isLciLoading } = useQuery(
+    {
+      queryKey: [queryKeys.images, linuxContainersServer],
+      queryFn: () => loadImages(linuxContainersJson, linuxContainersServer),
+    },
+  );
 
   const { data: imagesLxdImages = [], isLoading: isImagesLxdLoading } =
     useQuery({

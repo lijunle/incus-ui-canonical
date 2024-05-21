@@ -142,7 +142,10 @@ const CertificateGenerate: FC = () => {
                     </p>
                     <div className="p-code-snippet">
                       <pre className="p-code-snippet__block--icon">
-                        <code>incus config trust add-certificate Downloads/incus-ui.crt</code>
+                        <code>
+                          incus config trust add-certificate
+                          Downloads/incus-ui.crt
+                        </code>
                       </pre>
                     </div>
                   </div>
