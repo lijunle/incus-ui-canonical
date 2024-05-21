@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
@@ -72,7 +72,7 @@ const StorageVolumeDetail: FC = () => {
         <TabLinks
           tabs={tabs}
           activeTab={activeTab}
-          tabUrl={`/ui/project/${project}/storage/detail/${pool}/volumes/${type}/${volume.name}`}
+          tabUrl={`/ui/project/${project}/storage/pool/${pool}/volumes/${type}/${volume.name}`}
         />
         <NotificationRow />
         {!activeTab && (

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Notification, Row, Strip } from "@canonical/react-components";
 import InstanceOverview from "./InstanceOverview";
 import InstanceTerminal from "./InstanceTerminal";
@@ -72,7 +72,7 @@ const InstanceDetail: FC = () => {
           <TabLinks
             tabs={tabs}
             activeTab={activeTab}
-            tabUrl={`/ui/project/${project}/instances/detail/${name}`}
+            tabUrl={`/ui/project/${project}/instance/${name}`}
           />
 
           {!activeTab && (

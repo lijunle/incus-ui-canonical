@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProfile } from "api/profiles";
@@ -74,7 +74,7 @@ const ProfileDetail: FC = () => {
           <TabLinks
             tabs={tabs}
             activeTab={activeTab}
-            tabUrl={`/ui/project/${projectName}/profiles/detail/${name}`}
+            tabUrl={`/ui/project/${projectName}/profile/${name}`}
           />
 
           {!activeTab && (

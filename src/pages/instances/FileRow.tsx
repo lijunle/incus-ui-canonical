@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Icon } from "@canonical/react-components";
 import { queryKeys } from "util/queryKeys";
@@ -14,7 +14,7 @@ interface FileRowProps {
 
 const FileRow: FC<FileRowProps> = ({ instance, path }) => {
   const fileName = path.split("/").at(-1) ?? "";
-  const fileUrl = `/ui/project/${instance.project}/instances/detail/${instance.name}/logs/?file=${fileName}`;
+  const fileUrl = `/ui/project/${instance.project}/instance/${instance.name}/logs/?file=${fileName}`;
   const [isOpen, setOpen] = useState(getUrlParam("file") === fileName);
 
   const {

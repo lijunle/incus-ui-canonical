@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import RenameHeader, { RenameHeaderValues } from "components/RenameHeader";
 import { useFormik } from "formik";
@@ -48,7 +48,7 @@ const NetworkDetailHeader: FC<Props> = ({ name, network, project }) => {
       }
       renameNetwork(name, values.name, project)
         .then(() => {
-          navigate(`/ui/project/${project}/networks/detail/${values.name}`);
+          navigate(`/ui/project/${project}/network/${values.name}`);
           toastNotify.success(`Network ${name} renamed to ${values.name}.`);
           void formik.setFieldValue("isRenaming", false);
         })

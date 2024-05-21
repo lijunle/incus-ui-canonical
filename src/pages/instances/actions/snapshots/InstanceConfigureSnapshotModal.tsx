@@ -1,5 +1,5 @@
-import React, { FC, KeyboardEvent, ReactNode } from "react";
-import { Button, Modal } from "@canonical/react-components";
+import { FC, KeyboardEvent, ReactNode } from "react";
+import { ActionButton, Button, Modal } from "@canonical/react-components";
 import { LxdInstance } from "types/instance";
 import { useFormik } from "formik";
 import { updateInstance } from "api/instances";
@@ -13,7 +13,6 @@ import {
   getInstancePayload,
   InstanceEditSchema,
 } from "util/instanceEdit";
-import SubmitButton from "components/SubmitButton";
 import { useEventQueue } from "context/eventQueue";
 
 interface Props {
@@ -42,19 +41,21 @@ const InstanceConfigureSnapshotModal: FC<Props> = ({
         values,
       ) as LxdInstance;
 
-      void updateInstance(instancePayload, project ?? "").then((operation) => {
-        eventQueue.set(
-          operation.metadata.id,
-          () => onSuccess("Configuration updated."),
-          (msg) => onFailure("Configuration update failed", new Error(msg)),
-          () => {
-            close();
-            void queryClient.invalidateQueries({
-              queryKey: [queryKeys.instances],
-            });
-          },
-        );
-      });
+      void updateInstance(instancePayload, project ?? "")
+        .then((operation) => {
+          eventQueue.set(
+            operation.metadata.id,
+            () => onSuccess("Configuration updated."),
+            (msg) => onFailure("Configuration update failed", new Error(msg)),
+            () => {
+              close();
+              void queryClient.invalidateQueries({
+                queryKey: [queryKeys.instances],
+              });
+            },
+          );
+        })
+        .catch((e) => onFailure("Configuration update failed", e));
     },
   });
 
@@ -96,13 +97,15 @@ const InstanceConfigureSnapshotModal: FC<Props> = ({
             >
               Cancel
             </Button>
-            <SubmitButton
-              buttonLabel="Save"
+            <ActionButton
+              appearance="positive"
               className="u-no-margin--bottom"
-              isSubmitting={formik.isSubmitting}
-              isDisabled={formik.isSubmitting}
+              loading={formik.isSubmitting}
+              disabled={formik.isSubmitting}
               onClick={() => void formik.submitForm()}
-            />
+            >
+              Save
+            </ActionButton>
           </>
         )
       }

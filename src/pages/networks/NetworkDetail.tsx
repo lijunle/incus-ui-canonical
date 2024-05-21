@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
 import { useParams } from "react-router-dom";
@@ -50,7 +50,7 @@ const NetworkDetail: FC = () => {
         <TabLinks
           tabs={network?.managed ? tabs : ["Overview"]}
           activeTab={activeTab}
-          tabUrl={`/ui/project/${project}/networks/detail/${name}`}
+          tabUrl={`/ui/project/${project}/network/${name}`}
         />
         <NotificationRow />
         {!activeTab && (

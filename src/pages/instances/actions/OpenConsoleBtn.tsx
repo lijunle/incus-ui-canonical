@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { LxdInstance } from "types/instance";
 import { Button, Icon } from "@canonical/react-components";
@@ -12,7 +12,7 @@ const OpenConsoleBtn: FC<Props> = ({ instance }) => {
 
   const handleOpen = () => {
     navigate(
-      `/ui/project/${instance.project}/instances/detail/${instance.name}/console`,
+      `/ui/project/${instance.project}/instance/${instance.name}/console`,
     );
   };
 

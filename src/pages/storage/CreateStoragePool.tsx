@@ -1,25 +1,29 @@
-import React, { FC, useState } from "react";
-import { useNotify, Button } from "@canonical/react-components";
+import { FC, useState } from "react";
+import { useNotify, Button, ActionButton } from "@canonical/react-components";
 import { useQueryClient } from "@tanstack/react-query";
 import { createClusteredPool, createPool } from "api/storage-pools";
 import BaseLayout from "components/BaseLayout";
 import NotificationRow from "components/NotificationRow";
-import SubmitButton from "components/SubmitButton";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate, useParams } from "react-router-dom";
 import { queryKeys } from "util/queryKeys";
 import { zfsDriver } from "util/storageOptions";
-import { testDuplicateStoragePoolName } from "util/storagePool";
+import {
+  isPowerflexIncomplete,
+  testDuplicateStoragePoolName,
+} from "util/storagePool";
 import StoragePoolForm, {
   StoragePoolFormValues,
-  storagePoolFormToPayload,
+  toStoragePool,
 } from "./forms/StoragePoolForm";
 import { useClusterMembers } from "context/useClusterMembers";
 import FormFooterLayout from "components/forms/FormFooterLayout";
 import { slugify } from "util/slugify";
 import { MAIN_CONFIGURATION } from "./forms/StoragePoolFormMenu";
 import { useToastNotification } from "context/toastNotificationProvider";
+import { yamlToObject } from "util/yaml";
+import { LxdStoragePool } from "types/storage";
 
 const CreateStoragePool: FC = () => {
   const navigate = useNavigate();
@@ -54,7 +58,10 @@ const CreateStoragePool: FC = () => {
     },
     validationSchema: CreateStoragePoolSchema,
     onSubmit: (values) => {
-      const storagePool = storagePoolFormToPayload(values);
+      const storagePool = values.yaml
+        ? (yamlToObject(values.yaml) as LxdStoragePool)
+        : toStoragePool(values);
+
       const mutation =
         clusterMembers.length > 0
           ? () => createClusteredPool(storagePool, project, clusterMembers)
@@ -75,6 +82,10 @@ const CreateStoragePool: FC = () => {
     },
   });
 
+  const updateSection = (newSection: string) => {
+    setSection(slugify(newSection));
+  };
+
   return (
     <BaseLayout
       title="Create a storage pool"
@@ -84,7 +95,7 @@ const CreateStoragePool: FC = () => {
       <StoragePoolForm
         formik={formik}
         section={section}
-        setSection={(newSection) => setSection(slugify(newSection))}
+        setSection={updateSection}
       />
       <FormFooterLayout>
         <Button
@@ -93,12 +104,18 @@ const CreateStoragePool: FC = () => {
         >
           Cancel
         </Button>
-        <SubmitButton
-          isSubmitting={formik.isSubmitting}
-          isDisabled={!formik.isValid || !formik.values.name}
-          buttonLabel="Create"
+        <ActionButton
+          appearance="positive"
+          loading={formik.isSubmitting}
+          disabled={
+            !formik.isValid ||
+            !formik.values.name ||
+            isPowerflexIncomplete(formik)
+          }
           onClick={() => void formik.submitForm()}
-        />
+        >
+          Create
+        </ActionButton>
       </FormFooterLayout>
     </BaseLayout>
   );

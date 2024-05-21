@@ -1,9 +1,10 @@
-import React, { FC, ReactNode, useEffect, useState } from "react";
-import Editor from "@monaco-editor/react";
+import { FC, ReactNode, useEffect, useRef, useState } from "react";
+import Editor, { loader } from "@monaco-editor/react";
 import { updateMaxHeight } from "util/updateMaxHeight";
 import useEventListener from "@use-it/event-listener";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import classnames from "classnames";
 
 export interface YamlFormValues {
   yaml?: string;
@@ -25,7 +26,9 @@ const YamlForm: FC<Props> = ({
   readOnly = false,
 }) => {
   const [editor, setEditor] = useState<IStandaloneCodeEditor | null>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  loader.config({ paths: { vs: "/ui/monaco-editor/min/vs" } });
 
   const updateFormHeight = () => {
     if (!editor || !containerRef.current) {
@@ -46,7 +49,10 @@ const YamlForm: FC<Props> = ({
   return (
     <>
       {children}
-      <div ref={containerRef} className="code-editor-wrapper">
+      <div
+        ref={containerRef}
+        className={classnames("code-editor-wrapper", { "read-only": readOnly })}
+      >
         <Editor
           defaultValue={yaml}
           language="yaml"

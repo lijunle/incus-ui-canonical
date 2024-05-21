@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import classnames from "classnames";
 import Version from "./Version";
 import OperationStatus from "./OperationStatus";
@@ -6,12 +6,14 @@ import { useToastNotification } from "context/toastNotificationProvider";
 import { ICONS, Icon } from "@canonical/react-components";
 import { iconLookup, severityOrder } from "util/notifications";
 import useEventListener from "@use-it/event-listener";
+import { useAuth } from "context/auth";
 
 interface Props {
   className?: string;
 }
 
 const StatusBar: FC<Props> = ({ className }) => {
+  const { isAuthLoading, isAuthenticated } = useAuth();
   const { toggleListView, notifications, countBySeverity, isListView } =
     useToastNotification();
 
@@ -21,6 +23,10 @@ const StatusBar: FC<Props> = ({ className }) => {
       toggleListView();
     }
   });
+
+  if (isAuthLoading || !isAuthenticated) {
+    return null;
+  }
 
   const notificationIcons = severityOrder.map((severity) => {
     if (countBySeverity[severity]) {
@@ -32,6 +38,7 @@ const StatusBar: FC<Props> = ({ className }) => {
         />
       );
     }
+    return null;
   });
 
   const hasNotifications = !!notifications.length;

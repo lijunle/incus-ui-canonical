@@ -1,4 +1,4 @@
-import React, { FC, ReactNode } from "react";
+import { FC, ReactNode } from "react";
 import { Icon } from "@canonical/react-components";
 
 interface Props {
@@ -11,7 +11,7 @@ const HelpLink: FC<Props> = ({ children, href, title }) => {
   return (
     <div className="help-link">
       {children}
-      <a href={href} target="_blank" rel="noreferrer" title={title}>
+      <a href={href} target="_blank" rel="noopener noreferrer" title={title}>
         <Icon name="information" className="help-link-icon" />
       </a>
     </div>

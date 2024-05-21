@@ -1,14 +1,14 @@
 import { LxdImage, RemoteImage } from "types/image";
 import { LxdStorageVolume } from "types/storage";
 
-export const isVmOnlyImage = (image: RemoteImage) => {
+export const isVmOnlyImage = (image: RemoteImage): boolean | undefined => {
   if (image.server === LOCAL_ISO) {
     return true;
   }
   return image.variant?.includes("desktop");
 };
 
-export const isContainerOnlyImage = (image: RemoteImage) => {
+export const isContainerOnlyImage = (image: RemoteImage): boolean => {
   if (isVmOnlyImage(image)) {
     return false;
   }
@@ -38,19 +38,22 @@ export const isoToRemoteImage = (volume: LxdStorageVolume): RemoteImage => {
   };
 };
 
+export const LOCAL_IMAGE = "local-image";
+
 export const localLxdToRemoteImage = (image: LxdImage): RemoteImage => {
   return {
-    aliases: image.update_source?.alias ?? image.fingerprint,
+    aliases: image.update_source?.alias ?? image.aliases?.[0]?.name ?? "",
+    fingerprint: image.fingerprint,
     arch: image.architecture === "x86_64" ? "amd64" : image.architecture,
-    os: image.properties.os,
+    os: image.properties?.os ?? "",
     created_at: new Date(image.uploaded_at).getTime(),
-    release: image.properties.release,
-    server: image.update_source?.server,
+    release: image.properties?.release ?? "",
+    server: LOCAL_IMAGE,
     type: image.type,
   };
 };
 
-export const byLtsFirst = (a: RemoteImage, b: RemoteImage) => {
+export const byLtsFirst = (a: RemoteImage, b: RemoteImage): number => {
   if (a.aliases.includes("lts")) {
     return -1;
   }

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import {
   Button,
   Icon,
@@ -51,7 +51,7 @@ const NetworkDevicesForm: FC<Props> = ({ formik, project }) => {
     queryFn: () => fetchNetworks(project),
   });
 
-  if (profileError) {
+  if (networkError) {
     notify.failure("Loading networks failed", networkError);
   }
 

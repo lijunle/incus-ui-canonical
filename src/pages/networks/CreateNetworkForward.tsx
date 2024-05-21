@@ -1,8 +1,7 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import { useNotify } from "@canonical/react-components";
-import SubmitButton from "components/SubmitButton";
+import { ActionButton, useNotify } from "@canonical/react-components";
 import { useFormik } from "formik";
 import NetworkForwardForm, {
   NetworkForwardFormValues,
@@ -47,9 +46,7 @@ const CreateNetworkForward: FC = () => {
               queryKeys.forwards,
             ],
           });
-          navigate(
-            `/ui/project/${project}/networks/detail/${network}/forwards`,
-          );
+          navigate(`/ui/project/${project}/network/${network}/forwards`);
           toastNotify.success(
             `Network forward ${forward.listen_address} created.`,
           );
@@ -81,16 +78,17 @@ const CreateNetworkForward: FC = () => {
       <FormFooterLayout>
         <Link
           className="p-button--base"
-          to={`/ui/project/${project}/networks/detail/${network}/forwards`}
+          to={`/ui/project/${project}/network/${network}/forwards`}
         >
           Cancel
         </Link>
-        <SubmitButton
-          isSubmitting={formik.isSubmitting}
-          isDisabled={!formik.isValid || !formik.values.listenAddress}
-          buttonLabel="Create"
+        <ActionButton
+          loading={formik.isSubmitting}
+          disabled={!formik.isValid || !formik.values.listenAddress}
           onClick={() => void formik.submitForm()}
-        />
+        >
+          Create
+        </ActionButton>
       </FormFooterLayout>
     </BaseLayout>
   );

@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Modal } from "@canonical/react-components";
 import { LxdImageType, RemoteImage } from "types/image";
 import UploadCustomIso from "pages/storage/UploadCustomIso";
@@ -23,6 +23,8 @@ const CustomIsoModal: FC<Props> = ({ onClose, onSelect }) => {
         return "Select custom ISO";
       case UPLOAD_ISO:
         return "Upload custom ISO";
+      default:
+        return "";
     }
   };
 

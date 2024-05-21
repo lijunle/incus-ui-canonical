@@ -5,9 +5,10 @@
   "license": "LGPL-3.0-only",
   "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules yarn-error.log *.log build/ .jekyll-metadata .bundle playwright-report test-results haproxy-local.cfg",
+    "clean": "rm -rf node_modules yarn-error.log *.log build/ .jekyll-metadata .bundle playwright-report test-results haproxy-local.cfg coverage",
     "build-html": "cp build/ui/index.html build/index.html",
-    "build": "npx vite build && yarn build-html",
+    "build-monaco": "mkdir build/ui/monaco-editor && cp -R node_modules/monaco-editor/min build/ui/monaco-editor",
+    "build": "npx vite build && yarn build-html && yarn build-monaco",
     "format-js-eslint": "eslint 'src/**/*.{json,jsx,tsx,ts}' 'tests/**/*.ts' --fix",
     "format-js-prettier": "prettier 'src/**/*.{json,jsx,tsx,ts}' 'tests/**/*.ts' --write",
     "format-js": "yarn format-js-eslint && yarn format-js-prettier",
@@ -19,10 +20,16 @@
     "hooks-remove": "husky uninstall",
     "start": "concurrently --kill-others --raw 'vite --host | grep -v 3000' 'yarn serve'",
     "serve": "./entrypoint",
-    "test-js": "vitest --run"
+    "test-js": "vitest --run",
+    "test-e2e-edge": "npx playwright test --project chromium:lxd-latest-edge firefox:lxd-latest-edge",
+    "test-e2e-stable": "npx playwright test --project chromium:lxd-5.0-stable firefox:lxd-5.0-stable",
+    "test-coverage": "yarn test-js-coverage && yarn test-e2e-coverage && yarn test-report-coverage",
+    "test-js-coverage": "vitest --run --coverage",
+    "test-e2e-coverage": "rm -rf coverage/playwright* ;  PW_TEST_HTML_REPORT_OPEN='never' npx playwright test --project coverage",
+    "test-report-coverage": "cp coverage/unit/coverage-final.json coverage/playwright/ ; nyc report --reporter html --reporter cobertura --reporter text-summary --temp-dir coverage/playwright --report-dir coverage/playwright-report --exclude 'src/lib/**' --exclude 'src/types/**'"
   },
   "dependencies": {
-    "@canonical/react-components": "0.50.2",
+    "@canonical/react-components": "0.51.4",
     "@monaco-editor/react": "4.6.0",
     "@tanstack/react-query": "5.17.15",
     "@use-it/event-listener": "0.1.7",
@@ -40,7 +47,7 @@
     "react-router-dom": "6.21.3",
     "react-useportal": "1.0.19",
     "serve": "14.2.1",
-    "vanilla-framework": "4.7.0",
+    "vanilla-framework": "4.9.1",
     "xterm": "5.2.1",
     "xterm-addon-fit": "0.8.0",
     "yup": "1.3.3"
@@ -52,6 +59,7 @@
     "@babel/preset-react": "7.23.3",
     "@babel/preset-typescript": "7.23.3",
     "@playwright/test": "1.41.0",
+    "@types/convert-source-map": "2.0.3",
     "@types/cytoscape-popper": "2.0.4",
     "@types/node-forge": "1.3.11",
     "@types/react": "18.2.48",
@@ -62,8 +70,11 @@
     "@typescript-eslint/eslint-plugin": "6.19.0",
     "@typescript-eslint/parser": "6.19.0",
     "@vitejs/plugin-react": "4.2.1",
+    "@vitest/coverage-istanbul": "1.2.2",
     "autoprefixer": "10.4.16",
+    "babel-plugin-istanbul": "6.1.1",
     "concurrently": "8.2.2",
+    "convert-source-map": "2.0.0",
     "eslint": "8.56.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.1.3",
@@ -71,6 +82,7 @@
     "husky": "8.0.3",
     "lint-staged": "15.2.0",
     "monaco-editor": "0.45.0",
+    "nyc": "^15.1.0",
     "postcss": "8.4.33",
     "postcss-cli": "11.0.0",
     "prettier": "3.2.4",
@@ -81,7 +93,9 @@
     "stylelint-prettier": "5.0.0",
     "stylelint-scss": "6.0.0",
     "typescript": "5.3.3",
-    "vite": "4.5.2",
+    "v8-to-istanbul": "9.2.0",
+    "vite": "4.5.3",
+    "vite-plugin-istanbul": "5.0.0",
     "vite-tsconfig-paths": "4.3.1",
     "vitest": "1.2.1"
   },
@@ -97,6 +111,6 @@
     "src/**/*.scss": "stylelint"
   },
   "resolutions": {
-    "rollup": "@rollup/wasm-node@4.9.5"
+    "rollup": "@rollup/wasm-node@4.13.2"
   }
 }

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Input, Select, Textarea } from "@canonical/react-components";
 import { FormikProps } from "formik/dist/types";
 import { getConfigurationRow } from "components/ConfigurationRow";
@@ -17,7 +17,6 @@ const NetworkFormDns: FC<Props> = ({ formik }) => {
           formik,
           name: "dns_domain",
           label: "DNS domain",
-          help: "Domain to advertise to DHCP clients and use for DNS resolution",
           defaultValue: "",
           children: <Input type="text" />,
         }),
@@ -60,7 +59,6 @@ const NetworkFormDns: FC<Props> = ({ formik }) => {
           formik,
           name: "dns_search",
           label: "DNS search",
-          help: "Full comma-separated domain search list, defaulting to DNS domain value",
           defaultValue: "",
           children: <Textarea />,
         }),

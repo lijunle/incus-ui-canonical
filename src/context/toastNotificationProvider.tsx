@@ -9,7 +9,7 @@ import {
 import { NotificationSeverity } from "@canonical/react-components/dist/components/Notification/Notification";
 import ToastNotification from "components/ToastNotification";
 import ToastNotificationList from "components/ToastNotificationList";
-import React, {
+import {
   FC,
   PropsWithChildren,
   ReactNode,
@@ -173,7 +173,7 @@ const ToastNotificationProvider: FC<PropsWithChildren> = ({ children }) => {
   };
 
   const latestNotification = notifications[notifications.length - 1];
-  const hasNotifications = !!notifications?.length;
+  const hasNotifications = !!notifications.length;
   const showNotification = hasNotifications && !showList && notificationTimer;
   const showNotificationList = hasNotifications && showList;
   return (

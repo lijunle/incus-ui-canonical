@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Col, Row } from "@canonical/react-components";
 import useEventListener from "@use-it/event-listener";
@@ -162,7 +162,7 @@ const NetworkDetailOverview: FC<Props> = ({ network }) => {
                       items={data.profiles.map((item) => (
                         <div key={item.name}>
                           <Link
-                            to={`/ui/project/${item.project}/profiles/detail/${item.name}`}
+                            to={`/ui/project/${item.project}/profile/${item.name}`}
                           >
                             {item.name}
                           </Link>

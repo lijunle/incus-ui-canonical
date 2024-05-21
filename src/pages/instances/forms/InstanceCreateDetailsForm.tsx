@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import {
   Button,
   Col,
@@ -9,7 +9,12 @@ import {
 } from "@canonical/react-components";
 import ProfileSelect from "pages/profiles/ProfileSelector";
 import SelectImageBtn from "pages/images/actions/SelectImageBtn";
-import { isContainerOnlyImage, isVmOnlyImage, LOCAL_ISO } from "util/images";
+import {
+  isContainerOnlyImage,
+  isVmOnlyImage,
+  LOCAL_IMAGE,
+  LOCAL_ISO,
+} from "util/images";
 import { instanceCreationTypes } from "util/instanceOptions";
 import { FormikProps } from "formik/dist/types";
 import { CreateInstanceFormValues } from "pages/instances/CreateInstance";
@@ -18,6 +23,7 @@ import InstanceLocationSelect from "pages/instances/forms/InstanceLocationSelect
 import UseCustomIsoBtn from "pages/images/actions/UseCustomIsoBtn";
 import AutoExpandingTextArea from "components/AutoExpandingTextArea";
 import ScrollableForm from "components/ScrollableForm";
+import { useSupportedFeatures } from "context/useSupportedFeatures";
 
 export interface InstanceDetailsFormValues {
   name?: string;
@@ -45,6 +51,15 @@ export const instanceDetailPayload = (values: CreateInstanceFormValues) => {
     },
   };
 
+  if (values.image?.server === LOCAL_IMAGE) {
+    payload.source = {
+      type: "image",
+      certificate: "",
+      fingerprint: values.image?.fingerprint,
+      allow_inconsistent: false,
+    };
+  }
+
   if (values.image?.server === LOCAL_ISO) {
     payload.source = {
       type: "none",
@@ -67,6 +82,8 @@ const InstanceCreateDetailsForm: FC<Props> = ({
   onSelectImage,
   project,
 }) => {
+  const { hasCustomVolumeIso } = useSupportedFeatures();
+
   function figureBaseImageName() {
     const image = formik.values.image;
     return image
@@ -123,7 +140,9 @@ const InstanceCreateDetailsForm: FC<Props> = ({
             ) : (
               <>
                 <SelectImageBtn onSelect={onSelectImage} />
-                <UseCustomIsoBtn onSelect={onSelectImage} />
+                {hasCustomVolumeIso && (
+                  <UseCustomIsoBtn onSelect={onSelectImage} />
+                )}
               </>
             )}
           </div>

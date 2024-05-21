@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import {
+  ActionButton,
   Button,
   Col,
   Form,
@@ -10,7 +11,6 @@ import { useFormik } from "formik";
 import { updateInstance } from "api/instances";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import SubmitButton from "components/SubmitButton";
 import { dump as dumpYaml } from "js-yaml";
 import { yamlToObject } from "util/yaml";
 import { useNavigate, useParams } from "react-router-dom";
@@ -54,7 +54,8 @@ import { useEventQueue } from "context/eventQueue";
 import { hasDiskError, hasNetworkError } from "util/instanceValidation";
 import FormFooterLayout from "components/forms/FormFooterLayout";
 import { useToastNotification } from "context/toastNotificationProvider";
-import { instanceLinkFromOperation } from "util/instances";
+import InstanceLink from "pages/instances/InstanceLink";
+import { useDocs } from "context/useDocs";
 
 export interface InstanceEditDetailsFormValues {
   name: string;
@@ -79,6 +80,7 @@ interface Props {
 }
 
 const EditInstance: FC<Props> = ({ instance }) => {
+  const docBaseLink = useDocs();
   const eventQueue = useEventQueue();
   const toastNotify = useToastNotification();
   const { project, section } = useParams<{
@@ -111,33 +113,34 @@ const EditInstance: FC<Props> = ({ instance }) => {
 
       // ensure the etag is set (it is missing on the yaml)
       instancePayload.etag = instance.etag;
+      const instanceLink = <InstanceLink instance={instance} />;
 
-      void updateInstance(instancePayload, project).then((operation) => {
-        const instanceLink = instanceLinkFromOperation({
-          operation,
-          project,
+      void updateInstance(instancePayload, project)
+        .then((operation) => {
+          eventQueue.set(
+            operation.metadata.id,
+            () => {
+              toastNotify.success(<>Instance {instanceLink} updated.</>);
+              void formik.setValues(getInstanceEditValues(instancePayload));
+            },
+            (msg) =>
+              toastNotify.failure(
+                "Instance update failed.",
+                new Error(msg),
+                instanceLink,
+              ),
+            () => {
+              formik.setSubmitting(false);
+              void queryClient.invalidateQueries({
+                queryKey: [queryKeys.instances],
+              });
+            },
+          );
+        })
+        .catch((e) => {
+          formik.setSubmitting(false);
+          toastNotify.failure("Instance update failed.", e, instanceLink);
         });
-        if (!instanceLink) return;
-        eventQueue.set(
-          operation.metadata.id,
-          () => {
-            toastNotify.success(<>Instance {instanceLink} updated.</>);
-            void formik.setValues(getInstanceEditValues(instancePayload));
-          },
-          (msg) =>
-            toastNotify.failure(
-              "Instance update failed.",
-              new Error(msg),
-              instanceLink,
-            ),
-          () => {
-            formik.setSubmitting(false);
-            void queryClient.invalidateQueries({
-              queryKey: [queryKeys.instances],
-            });
-          },
-        );
-      });
     },
   });
 
@@ -146,7 +149,7 @@ const EditInstance: FC<Props> = ({ instance }) => {
       void formik.setFieldValue("yaml", undefined);
     }
 
-    const baseUrl = `/ui/project/${project}/instances/detail/${instance.name}/configuration`;
+    const baseUrl = `/ui/project/${project}/instance/${instance.name}/configuration`;
     newSection === MAIN_CONFIGURATION
       ? navigate(baseUrl)
       : navigate(`${baseUrl}/${slugify(newSection)}`);
@@ -184,6 +187,7 @@ const EditInstance: FC<Props> = ({ instance }) => {
           toggleConfigOpen={toggleMenu}
           hasDiskError={hasDiskError(formik)}
           hasNetworkError={hasNetworkError(formik)}
+          formik={formik}
         />
         <Row className="form-contents" key={section}>
           <Col size={12}>
@@ -217,19 +221,22 @@ const EditInstance: FC<Props> = ({ instance }) => {
 
             {section === slugify(YAML_CONFIGURATION) && (
               <YamlForm
+                key={`yaml-form-${formik.values.readOnly}`}
                 yaml={getYaml()}
                 setYaml={(yaml) => void formik.setFieldValue("yaml", yaml)}
                 readOnly={readOnly}
               >
-                {!readOnly && (
-                  <Notification
-                    severity="caution"
-                    title="Before you edit the YAML"
+                <Notification severity="information" title="YAML Configuration">
+                  This is the YAML representation of the instance.
+                  <br />
+                  <a
+                    href={`${docBaseLink}/instances`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Changes will be discarded, when switching back to the guided
-                    forms.
-                  </Notification>
-                )}
+                    Learn more about instances
+                  </a>
+                </Notification>
               </YamlForm>
             )}
           </Col>
@@ -253,16 +260,18 @@ const EditInstance: FC<Props> = ({ instance }) => {
             >
               Cancel
             </Button>
-            <SubmitButton
-              isSubmitting={formik.isSubmitting}
-              isDisabled={
+            <ActionButton
+              appearance="positive"
+              loading={formik.isSubmitting}
+              disabled={
                 !formik.isValid ||
                 hasDiskError(formik) ||
                 hasNetworkError(formik)
               }
-              buttonLabel="Save changes"
               onClick={() => void formik.submitForm()}
-            />
+            >
+              Save changes
+            </ActionButton>
           </>
         )}
       </FormFooterLayout>

@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import {
+  ActionButton,
   Button,
   Col,
   Form,
@@ -11,7 +12,6 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import SubmitButton from "components/SubmitButton";
 import { checkDuplicateName } from "util/helpers";
 import { dump as dumpYaml } from "js-yaml";
 import { yamlToObject } from "util/yaml";
@@ -58,6 +58,7 @@ import BaseLayout from "components/BaseLayout";
 import { hasDiskError, hasNetworkError } from "util/instanceValidation";
 import FormFooterLayout from "components/forms/FormFooterLayout";
 import { useToastNotification } from "context/toastNotificationProvider";
+import { useDocs } from "context/useDocs";
 
 export type CreateProfileFormValues = ProfileDetailsFormValues &
   FormDeviceValues &
@@ -68,6 +69,7 @@ export type CreateProfileFormValues = ProfileDetailsFormValues &
   YamlFormValues;
 
 const CreateProfile: FC = () => {
+  const docBaseLink = useDocs();
   const navigate = useNavigate();
   const notify = useNotify();
   const toastNotify = useToastNotification();
@@ -197,16 +199,20 @@ const CreateProfile: FC = () => {
 
             {section === YAML_CONFIGURATION && (
               <YamlForm
+                key={`yaml-form-${formik.values.readOnly}`}
                 yaml={getYaml()}
                 setYaml={(yaml) => void formik.setFieldValue("yaml", yaml)}
               >
-                <Notification
-                  severity="caution"
-                  title="Before you edit the YAML"
-                  titleElement="h2"
-                >
-                  Changes will be discarded, when switching back to the guided
-                  forms.
+                <Notification severity="information" title="YAML Configuration">
+                  This is the YAML representation of the profile.
+                  <br />
+                  <a
+                    href={`${docBaseLink}/profiles`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Learn more about profiles
+                  </a>
                 </Notification>
               </YamlForm>
             )}
@@ -220,17 +226,19 @@ const CreateProfile: FC = () => {
         >
           Cancel
         </Button>
-        <SubmitButton
-          isSubmitting={formik.isSubmitting}
-          isDisabled={
+        <ActionButton
+          appearance="positive"
+          loading={formik.isSubmitting}
+          disabled={
             !formik.isValid ||
             !formik.values.name ||
             hasDiskError(formik) ||
             hasNetworkError(formik)
           }
-          buttonLabel="Create"
           onClick={() => void formik.submitForm()}
-        />
+        >
+          Create
+        </ActionButton>
       </FormFooterLayout>
     </BaseLayout>
   );

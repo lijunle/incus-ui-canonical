@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-import React, {
+import {
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -176,7 +176,7 @@ export default forwardRef<Terminal, Props>(function Xterm(
     if (onCursorMove) xtermRef.current.onCursorMove(onCursorMove);
     if (onData) xtermRef.current.onData(onData);
     if (onKey) xtermRef.current.onKey(onKey);
-    if (onLineFeed) xtermRef.current.onLineFeed;
+    if (onLineFeed) xtermRef.current.onLineFeed(onLineFeed);
     if (onScroll) xtermRef.current.onScroll(onScroll);
     if (onSelectionChange)
       xtermRef.current.onSelectionChange(onSelectionChange);

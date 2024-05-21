@@ -1,10 +1,9 @@
-import { Page, test } from "@playwright/test";
+import { test } from "./fixtures/lxd-test";
 import {
   createInstance,
   deleteInstance,
   randomInstanceName,
 } from "./helpers/instances";
-// eslint-disable-next-line prettier/prettier
 import {
   closeInstancePanel,
   navigateToInstanceDetails,
@@ -14,31 +13,33 @@ import {
 } from "./helpers/instancePanel";
 
 let instance = randomInstanceName();
-let page: Page;
+
 test.beforeAll(async ({ browserName, browser }) => {
   instance = `${browserName}-${instance}`;
-  page = await browser.newPage();
+  const page = await browser.newPage();
   await createInstance(page, instance);
+  await page.close();
 });
 
-test.afterAll(async () => {
+test.afterAll(async ({ browser }) => {
+  const page = await browser.newPage();
   await deleteInstance(page, instance);
   await page.close();
 });
 
-test("instance panel open and close", async () => {
+test("instance panel open and close", async ({ page }) => {
   await openInstancePanel(page, instance);
   await closeInstancePanel(page);
 });
 
-test("start and stop instance from panel", async () => {
+test("start and stop instance from panel", async ({ page }) => {
   await openInstancePanel(page, instance);
   await startInstanceFromPanel(page, instance);
   await stopInstanceFromPanel(page, instance);
   await closeInstancePanel(page);
 });
 
-test("navigate to instance details from panel", async () => {
+test("navigate to instance details from panel", async ({ page }) => {
   await openInstancePanel(page, instance);
   await navigateToInstanceDetails(page, instance);
 });

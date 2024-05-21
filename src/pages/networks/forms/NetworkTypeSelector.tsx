@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Select } from "@canonical/react-components";
 import { FormikProps } from "formik/dist/types";
 import { NetworkFormValues } from "pages/networks/forms/NetworkForm";
@@ -32,7 +32,7 @@ const NetworkTypeSelector: FC<Props> = ({ formik }) => {
             <a
               href={`${docBaseLink}/howto/network_ovn_setup/#set-up-a-lxd-cluster-on-ovn`}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               Learn how to set up OVN
             </a>

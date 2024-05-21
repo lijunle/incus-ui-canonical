@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { LxdEvent } from "types/event";
 import { useEventQueue } from "context/eventQueue";
 import { useAuth } from "context/auth";
@@ -51,7 +51,9 @@ const Events: FC = () => {
         });
         void refetchOperations();
       }
-      handleEvent(event);
+      // ensure open requests that reply with an operation and register
+      // new handlers in the eventQueue are closed before handling the event
+      setTimeout(() => handleEvent(event), 250);
     };
   };
 

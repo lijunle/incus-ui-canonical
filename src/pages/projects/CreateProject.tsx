@@ -1,10 +1,9 @@
-import React, { FC, useEffect, useState } from "react";
-import { Button, useNotify } from "@canonical/react-components";
+import { FC, useEffect, useState } from "react";
+import { ActionButton, Button, useNotify } from "@canonical/react-components";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import SubmitButton from "components/SubmitButton";
 import { checkDuplicateName } from "util/helpers";
 import { useNavigate } from "react-router-dom";
 import { updateMaxHeight } from "util/updateMaxHeight";
@@ -41,6 +40,7 @@ import BaseLayout from "components/BaseLayout";
 import FormFooterLayout from "components/forms/FormFooterLayout";
 import { slugify } from "util/slugify";
 import { useToastNotification } from "context/toastNotificationProvider";
+import { useSupportedFeatures } from "context/useSupportedFeatures";
 
 export type ProjectFormValues = ProjectDetailsFormValues &
   ProjectResourceLimitsFormValues &
@@ -56,6 +56,8 @@ const CreateProject: FC = () => {
   const queryClient = useQueryClient();
   const controllerState = useState<AbortController | null>(null);
   const [section, setSection] = useState(slugify(PROJECT_DETAILS));
+  const { hasProjectsNetworksZones, hasStorageBuckets } =
+    useSupportedFeatures();
 
   const ProjectSchema = Yup.object().shape({
     name: Yup.string()
@@ -88,6 +90,14 @@ const CreateProject: FC = () => {
             ...networkRestrictionPayload(values),
           }
         : {};
+
+      if (!hasProjectsNetworksZones) {
+        values.features_networks_zones = undefined;
+      }
+
+      if (!hasStorageBuckets) {
+        values.features_storage_buckets = undefined;
+      }
 
       createProject(
         JSON.stringify({
@@ -127,12 +137,14 @@ const CreateProject: FC = () => {
         <Button appearance="base" onClick={() => navigate(-1)}>
           Cancel
         </Button>
-        <SubmitButton
-          isSubmitting={formik.isSubmitting}
-          isDisabled={!formik.isValid || !formik.values.name}
-          buttonLabel="Create"
+        <ActionButton
+          appearance="positive"
+          loading={formik.isSubmitting}
+          disabled={!formik.isValid || !formik.values.name}
           onClick={() => void formik.submitForm()}
-        />
+        >
+          Create
+        </ActionButton>
       </FormFooterLayout>
     </BaseLayout>
   );

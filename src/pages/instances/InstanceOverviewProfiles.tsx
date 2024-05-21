@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
 import { MainTable } from "@canonical/react-components";
@@ -48,7 +48,7 @@ const InstanceOverviewProfiles: FC<Props> = ({ instance, onFailure }) => {
         {
           content: (
             <Link
-              to={`/ui/project/${instance.project}/profiles/detail/${profile}`}
+              to={`/ui/project/${instance.project}/profile/${profile}`}
               title={`Profile ${profile}`}
             >
               {profile}

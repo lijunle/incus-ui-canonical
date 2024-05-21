@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { LxdClusterGroup } from "types/cluster";
 import { allClusterGroups } from "util/clusterGroups";
@@ -28,7 +28,7 @@ const ClusterGroupSelectorList: FC<Props> = ({ clusterGroups }) => {
             to={
               group.name === allClusterGroups
                 ? "/ui/cluster"
-                : `/ui/cluster/groups/detail/${group.name}`
+                : `/ui/cluster/group/${group.name}`
             }
             className="p-contextual-menu__link link"
           >

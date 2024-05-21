@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import {
   EmptyState,
   Icon,
@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { useDocs } from "context/useDocs";
 import useSortTableData from "util/useSortTableData";
 import { useToastNotification } from "context/toastNotificationProvider";
+import { useSupportedFeatures } from "context/useSupportedFeatures";
 
 interface Props {
   project: string;
@@ -27,12 +28,13 @@ interface Props {
 
 const CustomIsoList: FC<Props> = ({ project }) => {
   const docBaseLink = useDocs();
+  const { hasStorageVolumesAll } = useSupportedFeatures();
   const toastNotify = useToastNotification();
   const [query, setQuery] = useState<string>("");
 
   const { data: images = [], isLoading } = useQuery({
     queryKey: [queryKeys.isoVolumes, project],
-    queryFn: () => loadIsoVolumes(project),
+    queryFn: () => loadIsoVolumes(project, hasStorageVolumesAll),
   });
 
   const headers = [
@@ -86,7 +88,7 @@ const CustomIsoList: FC<Props> = ({ project }) => {
         {
           content: (
             <div className="u-truncate" title={image.pool}>
-              <Link to={`/ui/project/${project}/storage/detail/${image.pool}`}>
+              <Link to={`/ui/project/${project}/storage/pool/${image.pool}`}>
                 {image.pool}
               </Link>
             </div>
@@ -149,7 +151,7 @@ const CustomIsoList: FC<Props> = ({ project }) => {
         <a
           href={`${docBaseLink}/explanation/storage/`}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           Learn more about storage
           <Icon className="external-link-icon" name="external-link" />

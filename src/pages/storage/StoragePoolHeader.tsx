@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import RenameHeader, { RenameHeaderValues } from "components/RenameHeader";
 import { useFormik } from "formik";
@@ -42,7 +42,7 @@ const StoragePoolHeader: FC<Props> = ({ name, pool, project }) => {
       }
       renameStoragePool(name, values.name, project)
         .then(() => {
-          navigate(`/ui/project/${project}/storage/detail/${values.name}`);
+          navigate(`/ui/project/${project}/storage/pool/${values.name}`);
           toastNotify.success(
             `Storage pool ${name} renamed to ${values.name}.`,
           );

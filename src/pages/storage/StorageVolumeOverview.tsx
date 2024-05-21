@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 import { Col, Row } from "@canonical/react-components";
 import StorageUsedBy from "pages/storage/StorageUsedBy";
 import { updateMaxHeight } from "util/updateMaxHeight";
@@ -7,6 +7,7 @@ import { LxdStorageVolume } from "types/storage";
 import { isoTimeToString } from "util/helpers";
 import StorageVolumeSize from "pages/storage/StorageVolumeSize";
 import { renderContentType, renderVolumeType } from "util/storageVolume";
+import { Link } from "react-router-dom";
 
 interface Props {
   project: string;
@@ -48,6 +49,16 @@ const StorageVolumeOverview: FC<Props> = ({ project, volume }) => {
               <tr>
                 <th className="p-muted-heading">Location</th>
                 <td>{volume.location}</td>
+              </tr>
+              <tr>
+                <th className="p-muted-heading">Pool</th>
+                <td>
+                  <Link
+                    to={`/ui/project/${project}/storage/pool/${volume.pool}`}
+                  >
+                    {volume.pool}
+                  </Link>
+                </td>
               </tr>
               <tr>
                 <th className="p-muted-heading">Date created</th>

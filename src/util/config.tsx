@@ -28,7 +28,7 @@ export const configDescriptionToHtml = (
   input: string,
   docBaseLink: string,
   objectsInvTxt?: string[],
-) => {
+): string => {
   // special characters
   let result = input
     .replaceAll("<", "&lt;")
@@ -59,7 +59,7 @@ export const configDescriptionToHtml = (
       }
       const docPath = line.split(": ")[1];
       const linkText = token.replaceAll("-", " ");
-      const link = `<a href="${docBaseLink}/${docPath}" target="_blank" rel="noreferrer">${linkText}</a>`;
+      const link = `<a href="${docBaseLink}/${docPath}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
 
       result = result.replaceAll(tag, link);
     });

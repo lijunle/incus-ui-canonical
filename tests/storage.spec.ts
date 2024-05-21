@@ -1,4 +1,4 @@
-import { Page, test } from "@playwright/test";
+import { expect, test } from "./fixtures/lxd-test";
 import {
   createPool,
   deletePool,
@@ -18,19 +18,21 @@ import { activateOverride, setInput } from "./helpers/configuration";
 import { randomSnapshotName } from "./helpers/snapshots";
 
 let volume = randomVolumeName();
-let page: Page;
+
 test.beforeAll(async ({ browser, browserName }) => {
-  page = await browser.newPage();
+  const page = await browser.newPage();
   volume = `${browserName}-${volume}`;
   await createVolume(page, volume);
+  await page.close();
 });
 
-test.afterAll(async () => {
+test.afterAll(async ({ browser }) => {
+  const page = await browser.newPage();
   await deleteVolume(page, volume);
   await page.close();
 });
 
-test("storage pool create, edit and remove", async () => {
+test("storage pool create, edit and remove", async ({ page }) => {
   const pool = randomPoolName();
   await createPool(page, pool);
 
@@ -45,7 +47,7 @@ test("storage pool create, edit and remove", async () => {
   await deletePool(page, pool);
 });
 
-test("storage volume create, edit and remove", async () => {
+test("storage volume create, edit and remove", async ({ page }) => {
   await editVolume(page, volume);
   await page.getByPlaceholder("Enter value").fill("2");
   await saveVolume(page, volume);
@@ -54,7 +56,10 @@ test("storage volume create, edit and remove", async () => {
   await page.getByText("size2GiB").click();
 });
 
-test("storage volume edit snapshot configuration", async () => {
+test("storage volume edit snapshot configuration", async ({
+  page,
+  lxdVersion,
+}) => {
   await visitVolume(page, volume);
   await page.getByTestId("tab-link-Snapshots").click();
   await page.getByText("See configuration").click();
@@ -67,7 +72,11 @@ test("storage volume edit snapshot configuration", async () => {
     "snap123",
   );
   await setInput(page, "Expire after", "Enter expiry expression", "3m");
-  await activateOverride(page, "Schedule Schedule for automatic");
+  const scheduleFieldText =
+    lxdVersion === "5.0-stable"
+      ? "Schedule"
+      : "Schedule Schedule for automatic volume snapshots";
+  await activateOverride(page, scheduleFieldText);
   await page.getByPlaceholder("Enter cron expression").last().fill("@daily");
   await page.getByRole("button", { name: "Save" }).click();
   await page.waitForSelector(
@@ -75,7 +84,7 @@ test("storage volume edit snapshot configuration", async () => {
   );
 });
 
-test("custom storage volume add snapshot from CTA", async () => {
+test("custom storage volume add snapshot from CTA", async ({ page }) => {
   const volume = randomVolumeName();
   await createVolume(page, volume);
   await page
@@ -95,4 +104,11 @@ test("custom storage volume add snapshot from CTA", async () => {
   await page.waitForSelector(`text=Snapshot ${snapshot} created.`);
 
   await deleteVolume(page, volume);
+});
+
+test("navigate to custom volume via pool used by list", async ({ page }) => {
+  await visitVolume(page, volume);
+  await page.locator(`tr:has-text("Pool")`).getByRole("link").click();
+  await page.getByRole("link", { name: volume }).click();
+  await expect(page).toHaveURL(/volumes\/custom\//);
 });

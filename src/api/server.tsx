@@ -13,7 +13,7 @@ export const fetchSettings = (): Promise<LxdSettings> => {
   });
 };
 
-export const updateSettings = (config: LxdConfigPair) => {
+export const updateSettings = (config: LxdConfigPair): Promise<void> => {
   return new Promise((resolve, reject) => {
     fetch("/1.0", {
       method: "PATCH",
@@ -22,7 +22,7 @@ export const updateSettings = (config: LxdConfigPair) => {
       }),
     })
       .then(handleResponse)
-      .then((data) => resolve(data))
+      .then(resolve)
       .catch(reject);
   });
 };
@@ -36,7 +36,13 @@ export const fetchResources = (): Promise<LxdResources> => {
   });
 };
 
-export const fetchConfigOptions = (): Promise<LxdConfigOptions> => {
+export const fetchConfigOptions = (
+  hasMetadataConfiguration: boolean,
+): Promise<LxdConfigOptions | null> => {
+  if (!hasMetadataConfiguration) {
+    return new Promise((resolve) => resolve(null));
+  }
+
   return new Promise((resolve, reject) => {
     fetch("/1.0/metadata/configuration")
       .then(handleResponse)
@@ -45,7 +51,13 @@ export const fetchConfigOptions = (): Promise<LxdConfigOptions> => {
   });
 };
 
-export const fetchDocObjects = (): Promise<string[]> => {
+export const fetchDocObjects = (
+  hasDocumentationObject: boolean,
+): Promise<string[]> => {
+  if (!hasDocumentationObject) {
+    return new Promise((resolve) => resolve([]));
+  }
+
   return new Promise((resolve, reject) => {
     fetch("/documentation/objects.inv.txt")
       .then(handleTextResponse)

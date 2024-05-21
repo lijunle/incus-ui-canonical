@@ -6,6 +6,7 @@ export const btrfsDriver = "btrfs";
 export const lvmDriver = "lvm";
 export const zfsDriver = "zfs";
 export const cephDriver = "ceph";
+export const powerFlex = "powerflex";
 
 const storageDriverLabels: { [key: string]: string } = {
   [dirDriver]: "Directory",
@@ -13,9 +14,12 @@ const storageDriverLabels: { [key: string]: string } = {
   [lvmDriver]: "LVM",
   [zfsDriver]: "ZFS",
   [cephDriver]: "Ceph",
+  [powerFlex]: "Dell PowerFlex",
 };
 
-export const getStorageDriverOptions = (settings?: LxdSettings) => {
+export const getStorageDriverOptions = (
+  settings?: LxdSettings,
+): OptionHTMLAttributes<HTMLOptionElement>[] => {
   const serverSupportedStorageDrivers =
     settings?.environment?.storage_supported_drivers || [];
   const storageDriverOptions: OptionHTMLAttributes<HTMLOptionElement>[] = [];
@@ -26,7 +30,17 @@ export const getStorageDriverOptions = (settings?: LxdSettings) => {
     }
   }
 
-  return storageDriverOptions;
+  return storageDriverOptions.sort((a, b) =>
+    (a.label as string).localeCompare(b.label as string),
+  );
+};
+
+export const getSupportedStorageDrivers = (
+  settings?: LxdSettings,
+): Set<string> => {
+  return new Set(
+    getStorageDriverOptions(settings).map((driver) => driver.value as string),
+  );
 };
 
 const storageDriverToSourceHelp: Record<string, string> = {

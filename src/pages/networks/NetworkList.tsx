@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import {
   Button,
   EmptyState,
@@ -60,7 +60,7 @@ const NetworkList: FC = () => {
       columns: [
         {
           content: (
-            <Link to={`/ui/project/${project}/networks/detail/${network.name}`}>
+            <Link to={`/ui/project/${project}/network/${network.name}`}>
               {network.name}
             </Link>
           ),
@@ -167,13 +167,7 @@ const NetworkList: FC = () => {
               responsive
               sortable
               className="u-table-layout--auto"
-              emptyStateMsg={
-                isLoading ? (
-                  <Loader text="Loading networks..." />
-                ) : (
-                  "No data to display"
-                )
-              }
+              emptyStateMsg="No data to display"
             />
           )}
           {!isLoading && !hasNetworks && (
@@ -187,7 +181,7 @@ const NetworkList: FC = () => {
                 <a
                   href={`${docBaseLink}/explanation/networks/`}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   Learn more about networks
                   <Icon className="external-link-icon" name="external-link" />

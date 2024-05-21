@@ -104,23 +104,35 @@ export const migrateInstance = (
   });
 };
 
-export const startInstance = (instance: LxdInstance) => {
+export const startInstance = (
+  instance: LxdInstance,
+): Promise<LxdOperationResponse> => {
   return putInstanceAction(instance.name, instance.project, "start");
 };
 
-export const stopInstance = (instance: LxdInstance, isForce: boolean) => {
+export const stopInstance = (
+  instance: LxdInstance,
+  isForce: boolean,
+): Promise<LxdOperationResponse> => {
   return putInstanceAction(instance.name, instance.project, "stop", isForce);
 };
 
-export const freezeInstance = (instance: LxdInstance) => {
+export const freezeInstance = (
+  instance: LxdInstance,
+): Promise<LxdOperationResponse> => {
   return putInstanceAction(instance.name, instance.project, "freeze");
 };
 
-export const unfreezeInstance = (instance: LxdInstance) => {
+export const unfreezeInstance = (
+  instance: LxdInstance,
+): Promise<LxdOperationResponse> => {
   return putInstanceAction(instance.name, instance.project, "unfreeze");
 };
 
-export const restartInstance = (instance: LxdInstance, isForce: boolean) => {
+export const restartInstance = (
+  instance: LxdInstance,
+  isForce: boolean,
+): Promise<LxdOperationResponse> => {
   return putInstanceAction(instance.name, instance.project, "restart", isForce);
 };
 
@@ -159,16 +171,19 @@ export const updateInstanceBulkAction = (
   return new Promise((resolve) => {
     void Promise.allSettled(
       actions.map(async ({ name, project, action }) => {
-        return await putInstanceAction(name, project, action, isForce).then(
-          (operation) => {
+        return await putInstanceAction(name, project, action, isForce)
+          .then((operation) => {
             eventQueue.set(
               operation.metadata.id,
               () => pushSuccess(results),
               (msg) => pushFailure(results, msg),
               () => continueOrFinish(results, actions.length, resolve),
             );
-          },
-        );
+          })
+          .catch((e) => {
+            pushFailure(results, e instanceof Error ? e.message : "");
+            continueOrFinish(results, actions.length, resolve);
+          });
       }),
     );
   });
@@ -195,14 +210,19 @@ export const deleteInstanceBulk = (
   return new Promise((resolve) => {
     void Promise.allSettled(
       instances.map(async (instance) => {
-        return await deleteInstance(instance).then((operation) => {
-          eventQueue.set(
-            operation.metadata.id,
-            () => pushSuccess(results),
-            (msg) => pushFailure(results, msg),
-            () => continueOrFinish(results, instances.length, resolve),
-          );
-        });
+        return await deleteInstance(instance)
+          .then((operation) => {
+            eventQueue.set(
+              operation.metadata.id,
+              () => pushSuccess(results),
+              (msg) => pushFailure(results, msg),
+              () => continueOrFinish(results, instances.length, resolve),
+            );
+          })
+          .catch((e) => {
+            pushFailure(results, e instanceof Error ? e.message : "");
+            continueOrFinish(results, instances.length, resolve);
+          });
       }),
     );
   });

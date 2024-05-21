@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { deleteImage } from "api/images";
 import { LxdImage } from "types/image";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,28 +18,35 @@ const DeleteImageBtn: FC<Props> = ({ image, project }) => {
   const [isLoading, setLoading] = useState(false);
   const queryClient = useQueryClient();
 
+  const description = image.properties?.description ?? image.fingerprint;
+
   const handleDelete = () => {
     setLoading(true);
-    void deleteImage(image, project).then((operation) =>
-      eventQueue.set(
-        operation.metadata.id,
-        () => {
-          void queryClient.invalidateQueries({
-            queryKey: [queryKeys.images],
-          });
-          void queryClient.invalidateQueries({
-            queryKey: [queryKeys.projects, project],
-          });
-          toastNotify.success(`Image ${image.properties.description} deleted.`);
-        },
-        (msg) =>
-          toastNotify.failure(
-            `Image ${image.properties.description} deletion failed`,
-            new Error(msg),
-          ),
-        () => setLoading(false),
-      ),
-    );
+    void deleteImage(image, project)
+      .then((operation) =>
+        eventQueue.set(
+          operation.metadata.id,
+          () => {
+            void queryClient.invalidateQueries({
+              queryKey: [queryKeys.images],
+            });
+            void queryClient.invalidateQueries({
+              queryKey: [queryKeys.projects, project],
+            });
+            toastNotify.success(`Image ${description} deleted.`);
+          },
+          (msg) =>
+            toastNotify.failure(
+              `Image ${description} deletion failed`,
+              new Error(msg),
+            ),
+          () => setLoading(false),
+        ),
+      )
+      .catch((e) => {
+        toastNotify.failure(`Image ${description} deletion failed`, e);
+        setLoading(false);
+      });
   };
 
   return (
@@ -49,8 +56,7 @@ const DeleteImageBtn: FC<Props> = ({ image, project }) => {
         title: "Confirm delete",
         children: (
           <p>
-            This will permanently delete image{" "}
-            <b>{image.properties.description}</b>.<br />
+            This will permanently delete image <b>{description}</b>.<br />
             This action cannot be undone, and can result in data loss.
           </p>
         ),

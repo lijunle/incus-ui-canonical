@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import ImageName from "pages/images/ImageName";
 import { LxdStoragePool, LxdStorageVolume } from "types/storage";
@@ -52,9 +52,7 @@ const StorageUsedBy: FC<Props> = ({ storage, project }) => {
             <ExpandableList
               items={data[PROFILES].map((item) => (
                 <div key={`${item.name}-${item.project}`}>
-                  <Link
-                    to={`/ui/project/${item.project}/profiles/detail/${item.name}`}
-                  >
+                  <Link to={`/ui/project/${item.project}/profile/${item.name}`}>
                     {item.name}
                   </Link>
                   {item.project !== project && ` (project ${item.project})`}
@@ -85,14 +83,30 @@ const StorageUsedBy: FC<Props> = ({ storage, project }) => {
           <td>
             <ExpandableList
               items={data[SNAPSHOTS].map((item) => (
-                <div key={`${item.instance}-${item.name}-${item.project}`}>
-                  <Link
-                    to={`/ui/project/${item.project}/instances/detail/${item.instance}/snapshots`}
-                  >
-                    {`${item.instance} ${item.name}`}
-                  </Link>
-                  {item.project !== project && ` (project ${item.project})`}
-                </div>
+                <>
+                  {item.instance && (
+                    <div key={`${item.instance}-${item.name}-${item.project}`}>
+                      <Link
+                        to={`/ui/project/${item.project}/instance/${item.instance}/snapshots`}
+                      >
+                        {`${item.instance} ${item.name}`}
+                      </Link>
+                      {item.project !== project && ` (project ${item.project})`}
+                    </div>
+                  )}
+                  {item.volume && (
+                    <div
+                      key={`${item.volume}-${item.name}-${item.project}-${item.pool}`}
+                    >
+                      <Link
+                        to={`/ui/project/${item.project}/storage/pool/${item.pool}/volumes/custom/${item.volume}/snapshots`}
+                      >
+                        {`${item.volume} ${item.name}`}
+                      </Link>
+                      {item.project !== project && ` (project ${item.project})`}
+                    </div>
+                  )}
+                </>
               ))}
             />
           </td>
@@ -106,7 +120,7 @@ const StorageUsedBy: FC<Props> = ({ storage, project }) => {
               items={data[CUSTOM_VOLUMES].map((item) => (
                 <div key={`${item.name}-${item.project}`}>
                   <Link
-                    to={`/ui/project/${item.project}/storage/detail/${storage.name}/volumes/custom/${item.name}`}
+                    to={`/ui/project/${item.project}/storage/pool/${storage.name}/volumes/custom/${item.name}`}
                   >
                     {item.name}
                   </Link>

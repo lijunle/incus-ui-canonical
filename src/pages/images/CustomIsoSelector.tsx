@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Button, MainTable } from "@canonical/react-components";
 import { humanFileSize, isoTimeToString } from "util/helpers";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import Loader from "components/Loader";
 import { useProject } from "context/project";
 import { LxdImageType, RemoteImage } from "types/image";
 import { IsoImage } from "types/iso";
+import { useSupportedFeatures } from "context/useSupportedFeatures";
 
 interface Props {
   primaryImage: IsoImage | null;
@@ -24,10 +25,11 @@ const CustomIsoSelector: FC<Props> = ({
 }) => {
   const { project } = useProject();
   const projectName = project?.name ?? "";
+  const { hasStorageVolumesAll } = useSupportedFeatures();
 
   const { data: images = [], isLoading } = useQuery({
     queryKey: [queryKeys.isoVolumes, project],
-    queryFn: () => loadIsoVolumes(projectName),
+    queryFn: () => loadIsoVolumes(projectName, hasStorageVolumesAll),
   });
 
   const headers = [
@@ -39,7 +41,10 @@ const CustomIsoSelector: FC<Props> = ({
   ];
 
   const rows = images.map((image) => {
+    const selectIso = () => onSelect(image, "virtual-machine");
+
     return {
+      className: "u-row",
       columns: [
         {
           content: (
@@ -49,16 +54,19 @@ const CustomIsoSelector: FC<Props> = ({
           ),
           role: "cell",
           "aria-label": "Name",
+          onClick: selectIso,
         },
         {
           content: image.pool,
           role: "cell",
           "aria-label": "Storage pool",
+          onClick: selectIso,
         },
         {
           content: isoTimeToString(new Date(image.created_at).toISOString()),
           role: "cell",
           "aria-label": "Uploaded at",
+          onClick: selectIso,
         },
         {
           content:
@@ -66,17 +74,18 @@ const CustomIsoSelector: FC<Props> = ({
             humanFileSize(+image.volume.config.size),
           role: "cell",
           "aria-label": "Size",
+          onClick: selectIso,
         },
         {
           content: (
             <Button
               appearance={
                 primaryImage?.name === image.aliases &&
-                primaryImage.pool === image.pool
+                primaryImage?.pool === image.pool
                   ? "positive"
                   : ""
               }
-              onClick={() => onSelect(image, "virtual-machine")}
+              onClick={selectIso}
               dense
             >
               Select
@@ -85,6 +94,7 @@ const CustomIsoSelector: FC<Props> = ({
           role: "cell",
           "aria-label": "Actions",
           className: "u-align--right",
+          onClick: selectIso,
         },
       ],
       sortData: {
@@ -102,10 +112,8 @@ const CustomIsoSelector: FC<Props> = ({
         <MainTable
           headers={headers}
           rows={rows}
-          paginate={30}
-          responsive
           sortable
-          className="u-table-layout--auto"
+          className="table-iso-select u-table-layout--auto"
           emptyStateMsg={
             isLoading ? (
               <Loader text="Loading images..." />

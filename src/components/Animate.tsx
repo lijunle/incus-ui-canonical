@@ -1,4 +1,4 @@
-import React, {
+import {
   FC,
   PropsWithChildren,
   useLayoutEffect,
@@ -53,12 +53,14 @@ const Animate: FC<PropsWithChildren<Props>> = ({
     }
   }, [show, removeState]);
 
+  if (removeState) {
+    return null;
+  }
+
   return (
-    !removeState && (
-      <div ref={containerRef} className={className}>
-        {children}
-      </div>
-    )
+    <div ref={containerRef} className={className}>
+      {children}
+    </div>
   );
 };
 

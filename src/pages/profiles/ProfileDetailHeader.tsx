@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DeleteProfileBtn from "./actions/DeleteProfileBtn";
 import { LxdProfile } from "types/profile";
@@ -54,7 +54,7 @@ const ProfileDetailHeader: FC<Props> = ({
       }
       renameProfile(name, values.name, project)
         .then(() => {
-          navigate(`/ui/project/${project}/profiles/detail/${values.name}`);
+          navigate(`/ui/project/${project}/profile/${values.name}`);
           toastNotify.success(`Profile ${name} renamed to ${values.name}.`);
           void formik.setFieldValue("isRenaming", false);
         })

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { queryKeys } from "util/queryKeys";
 import { fetchImage } from "api/images";
 import { useQuery } from "@tanstack/react-query";
@@ -14,7 +14,7 @@ const ImageName: FC<Props> = ({ id, project }) => {
     queryFn: () => fetchImage(id, project),
   });
 
-  const label = image?.properties.description
+  const label = image?.properties?.description
     ? image.properties.description
     : id;
 

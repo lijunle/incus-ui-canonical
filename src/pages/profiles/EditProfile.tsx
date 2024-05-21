@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import {
+  ActionButton,
   Button,
   Col,
   Form,
@@ -11,26 +12,21 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import SubmitButton from "components/SubmitButton";
 import { dump as dumpYaml } from "js-yaml";
 import { yamlToObject } from "util/yaml";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { FormDeviceValues, formDeviceToPayload } from "util/formDevices";
+import { FormDeviceValues } from "util/formDevices";
 import SecurityPoliciesForm, {
   SecurityPoliciesFormValues,
-  securityPoliciesPayload,
 } from "components/forms/SecurityPoliciesForm";
 import InstanceSnapshotsForm, {
   SnapshotFormValues,
-  snapshotsPayload,
 } from "components/forms/InstanceSnapshotsForm";
 import CloudInitForm, {
   CloudInitFormValues,
-  cloudInitPayload,
 } from "components/forms/CloudInitForm";
 import ResourceLimitsForm, {
   ResourceLimitsFormValues,
-  resourceLimitsPayload,
 } from "components/forms/ResourceLimitsForm";
 import YamlForm, { YamlFormValues } from "components/forms/YamlForm";
 import { updateProfile } from "api/profiles";
@@ -50,16 +46,15 @@ import { updateMaxHeight } from "util/updateMaxHeight";
 import DiskDeviceForm from "components/forms/DiskDeviceForm";
 import NetworkDevicesForm from "components/forms/NetworkDevicesForm";
 import ProfileDetailsForm, {
-  profileDetailPayload,
   ProfileDetailsFormValues,
 } from "pages/profiles/forms/ProfileDetailsForm";
-import { getUnhandledKeyValues } from "util/formFields";
-import { getProfileConfigKeys } from "util/instanceConfigFields";
 import { getProfileEditValues } from "util/instanceEdit";
 import { slugify } from "util/slugify";
 import { hasDiskError, hasNetworkError } from "util/instanceValidation";
 import FormFooterLayout from "components/forms/FormFooterLayout";
 import { useToastNotification } from "context/toastNotificationProvider";
+import { useDocs } from "context/useDocs";
+import { getProfilePayload } from "util/profileEdit";
 
 export type EditProfileFormValues = ProfileDetailsFormValues &
   FormDeviceValues &
@@ -75,6 +70,7 @@ interface Props {
 }
 
 const EditProfile: FC<Props> = ({ profile, featuresProfiles }) => {
+  const docBaseLink = useDocs();
   const notify = useNotify();
   const toastNotify = useToastNotification();
   const { project, section } = useParams<{
@@ -104,7 +100,9 @@ const EditProfile: FC<Props> = ({ profile, featuresProfiles }) => {
     validationSchema: ProfileSchema,
     onSubmit: (values) => {
       const profilePayload = (
-        values.yaml ? yamlToObject(values.yaml) : getPayload(values)
+        values.yaml
+          ? yamlToObject(values.yaml)
+          : getProfilePayload(profile, values)
       ) as LxdProfile;
 
       // ensure the etag is set (it is missing on the yaml)
@@ -127,30 +125,8 @@ const EditProfile: FC<Props> = ({ profile, featuresProfiles }) => {
     },
   });
 
-  const getPayload = (values: EditProfileFormValues) => {
-    const handledConfigKeys = getProfileConfigKeys();
-    const handledKeys = new Set(["name", "description", "devices", "config"]);
-
-    return {
-      ...profileDetailPayload(values),
-      devices: formDeviceToPayload(values.devices),
-      config: {
-        ...resourceLimitsPayload(values),
-        ...securityPoliciesPayload(values),
-        ...snapshotsPayload(values),
-        ...cloudInitPayload(values),
-        ...getUnhandledKeyValues(profile.config, handledConfigKeys),
-      },
-      ...getUnhandledKeyValues(profile, handledKeys),
-    };
-  };
-
   const updateSection = (newSection: string) => {
-    if (Boolean(formik.values.yaml) && newSection !== YAML_CONFIGURATION) {
-      void formik.setFieldValue("yaml", undefined);
-    }
-
-    const baseUrl = `/ui/project/${project}/profiles/detail/${profile.name}/configuration`;
+    const baseUrl = `/ui/project/${project}/profile/${profile.name}/configuration`;
     newSection === MAIN_CONFIGURATION
       ? navigate(baseUrl)
       : navigate(`${baseUrl}/${slugify(newSection)}`);
@@ -162,8 +138,9 @@ const EditProfile: FC<Props> = ({ profile, featuresProfiles }) => {
 
   const getYaml = () => {
     const exclude = new Set(["used_by", "etag"]);
+    const profilePayload = getProfilePayload(profile, formik.values);
     const bareProfile = Object.fromEntries(
-      Object.entries(profile).filter((e) => !exclude.has(e[0])),
+      Object.entries(profilePayload).filter((e) => !exclude.has(e[0])),
     );
     return dumpYaml(bareProfile);
   };
@@ -176,7 +153,7 @@ const EditProfile: FC<Props> = ({ profile, featuresProfiles }) => {
         <Notification severity="caution" title="Inherited profile">
           Modifications are only available in the{" "}
           <Link
-            to={`/ui/project/default/profiles/detail/${profile.name}/configuration`}
+            to={`/ui/project/default/profile/${profile.name}/configuration`}
           >
             default project
           </Link>
@@ -224,20 +201,22 @@ const EditProfile: FC<Props> = ({ profile, featuresProfiles }) => {
 
             {section === slugify(YAML_CONFIGURATION) && (
               <YamlForm
+                key={`yaml-form-${formik.values.readOnly}`}
                 yaml={getYaml()}
                 setYaml={(yaml) => void formik.setFieldValue("yaml", yaml)}
                 readOnly={readOnly}
               >
-                {!readOnly && (
-                  <Notification
-                    severity="caution"
-                    title="Before you edit the YAML"
-                    titleElement="h2"
+                <Notification severity="information" title="YAML Configuration">
+                  This is the YAML representation of the profile.
+                  <br />
+                  <a
+                    href={`${docBaseLink}/profiles`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Changes will be discarded, when switching back to the guided
-                    forms.
-                  </Notification>
-                )}
+                    Learn more about profiles
+                  </a>
+                </Notification>
               </YamlForm>
             )}
           </Col>
@@ -260,16 +239,18 @@ const EditProfile: FC<Props> = ({ profile, featuresProfiles }) => {
             >
               Cancel
             </Button>
-            <SubmitButton
-              isSubmitting={formik.isSubmitting}
-              isDisabled={
+            <ActionButton
+              appearance="positive"
+              loading={formik.isSubmitting}
+              disabled={
                 !formik.isValid ||
                 hasDiskError(formik) ||
                 hasNetworkError(formik)
               }
-              buttonLabel="Save changes"
               onClick={() => void formik.submitForm()}
-            />
+            >
+              Save changes
+            </ActionButton>
           </>
         )}
       </FormFooterLayout>

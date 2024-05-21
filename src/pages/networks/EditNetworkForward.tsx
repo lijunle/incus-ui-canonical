@@ -1,8 +1,7 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import { useNotify } from "@canonical/react-components";
-import SubmitButton from "components/SubmitButton";
+import { ActionButton, useNotify } from "@canonical/react-components";
 import { useFormik } from "formik";
 import NetworkForwardForm, {
   NetworkForwardFormValues,
@@ -74,9 +73,7 @@ const EditNetworkForward: FC = () => {
               queryKeys.forwards,
             ],
           });
-          navigate(
-            `/ui/project/${project}/networks/detail/${network}/forwards`,
-          );
+          navigate(`/ui/project/${project}/network/${network}/forwards`);
           toastNotify.success(
             `Network forward ${forward.listen_address} updated.`,
           );
@@ -109,16 +106,18 @@ const EditNetworkForward: FC = () => {
       <FormFooterLayout>
         <Link
           className="p-button--base"
-          to={`/ui/project/${project}/networks/detail/${network}/forwards`}
+          to={`/ui/project/${project}/network/${network}/forwards`}
         >
           Cancel
         </Link>
-        <SubmitButton
-          isSubmitting={formik.isSubmitting}
-          isDisabled={!formik.isValid || !formik.values.listenAddress}
-          buttonLabel="Update"
+        <ActionButton
+          appearance="positive"
+          loading={formik.isSubmitting}
+          disabled={!formik.isValid || !formik.values.listenAddress}
           onClick={() => void formik.submitForm()}
-        />
+        >
+          Update
+        </ActionButton>
       </FormFooterLayout>
     </BaseLayout>
   );

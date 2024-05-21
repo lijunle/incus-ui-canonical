@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import ItemName from "components/ItemName";
 
@@ -12,7 +12,7 @@ interface Props {
 const ProfileLink: FC<Props> = ({ profile }) => {
   return (
     <Link
-      to={`/ui/project/${profile.project}/profiles/detail/${profile.name}`}
+      to={`/ui/project/${profile.project}/profile/${profile.name}`}
       onClick={(e) => e.stopPropagation()}
     >
       <ItemName item={profile} />

@@ -1,5 +1,4 @@
-import React, { FC, MouseEvent, useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { FC, MouseEvent, useEffect, useState } from "react";
 import { Button, Icon } from "@canonical/react-components";
 import { useAuth } from "context/auth";
 import classnames from "classnames";
@@ -8,20 +7,19 @@ import ProjectSelector from "pages/projects/ProjectSelector";
 import { isWidthBelow, logout } from "util/helpers";
 import { useProject } from "context/project";
 import { useMenuCollapsed } from "context/menuCollapsed";
-import { getCookie } from "util/cookies";
 import { useDocs } from "context/useDocs";
+import NavLink from "components/NavLink";
 
 const isSmallScreen = () => isWidthBelow(620);
 
 const Navigation: FC = () => {
-  const { isRestricted } = useAuth();
+  const { isRestricted, isOidc } = useAuth();
   const docBaseLink = useDocs();
   const { menuCollapsed, setMenuCollapsed } = useMenuCollapsed();
   const { project, isLoading } = useProject();
   const [projectName, setProjectName] = useState(
     project && !isLoading ? project.name : "default",
   );
-  const hasOidcCookie = Boolean(getCookie("oidc_access"));
 
   useEffect(() => {
     project && project.name !== projectName && setProjectName(project.name);
@@ -94,7 +92,6 @@ const Navigation: FC = () => {
                       </li>
                       <li className="p-side-navigation__item secondary">
                         <NavLink
-                          className="p-side-navigation__link"
                           to={`/ui/project/${projectName}/instances`}
                           title={`Instances (${projectName})`}
                         >
@@ -107,7 +104,6 @@ const Navigation: FC = () => {
                       </li>
                       <li className="p-side-navigation__item secondary">
                         <NavLink
-                          className="p-side-navigation__link"
                           to={`/ui/project/${projectName}/profiles`}
                           title={`Profiles (${projectName})`}
                         >
@@ -120,7 +116,6 @@ const Navigation: FC = () => {
                       </li>
                       <li className="p-side-navigation__item secondary">
                         <NavLink
-                          className="p-side-navigation__link"
                           to={`/ui/project/${projectName}/networks`}
                           title={`Networks (${projectName})`}
                         >
@@ -133,7 +128,6 @@ const Navigation: FC = () => {
                       </li>
                       <li className="p-side-navigation__item secondary">
                         <NavLink
-                          className="p-side-navigation__link"
                           to={`/ui/project/${projectName}/storage`}
                           title={`Storage (${projectName})`}
                         >
@@ -146,7 +140,6 @@ const Navigation: FC = () => {
                       </li>
                       <li className="p-side-navigation__item secondary">
                         <NavLink
-                          className="p-side-navigation__link"
                           to={`/ui/project/${projectName}/images`}
                           title={`Images (${projectName})`}
                         >
@@ -159,7 +152,6 @@ const Navigation: FC = () => {
                       </li>
                       <li className="p-side-navigation__item secondary">
                         <NavLink
-                          className="p-side-navigation__link"
                           to={`/ui/project/${projectName}/configuration`}
                           title={`Configuration (${projectName})`}
                         >
@@ -172,11 +164,7 @@ const Navigation: FC = () => {
                       </li>
                       <hr className="is-dark navigation-hr" />
                       <li className="p-side-navigation__item">
-                        <NavLink
-                          className="p-side-navigation__link"
-                          to="/ui/cluster"
-                          title="Cluster"
-                        >
+                        <NavLink to="/ui/cluster" title="Cluster">
                           <Icon
                             className="is-light p-side-navigation__icon"
                             name="machines"
@@ -186,7 +174,6 @@ const Navigation: FC = () => {
                       </li>
                       <li className="p-side-navigation__item">
                         <NavLink
-                          className="p-side-navigation__link"
                           to={`/ui/operations`}
                           title={`Operations (${projectName})`}
                         >
@@ -199,11 +186,7 @@ const Navigation: FC = () => {
                       </li>
                       {!isRestricted && (
                         <li className="p-side-navigation__item">
-                          <NavLink
-                            className="p-side-navigation__link"
-                            to="/ui/warnings"
-                            title="Warnings"
-                          >
+                          <NavLink to="/ui/warnings" title="Warnings">
                             <Icon
                               className="is-light p-side-navigation__icon"
                               name="warning-grey"
@@ -213,11 +196,7 @@ const Navigation: FC = () => {
                         </li>
                       )}
                       <li className="p-side-navigation__item">
-                        <NavLink
-                          className="p-side-navigation__link"
-                          to="/ui/settings"
-                          title="Settings"
-                        >
+                        <NavLink to="/ui/settings" title="Settings">
                           <Icon
                             className="is-light p-side-navigation__icon"
                             name="settings"
@@ -225,7 +204,7 @@ const Navigation: FC = () => {
                           Settings
                         </NavLink>
                       </li>
-                      {hasOidcCookie && (
+                      {isOidc && (
                         <li className="p-side-navigation__item">
                           <a
                             className="p-side-navigation__link"
@@ -245,11 +224,7 @@ const Navigation: FC = () => {
                   {!isAuthenticated && (
                     <>
                       <li className="p-side-navigation__item">
-                        <NavLink
-                          className="p-side-navigation__link"
-                          to="/ui/login"
-                          title="Login"
-                        >
+                        <NavLink to="/ui/login" title="Login">
                           <Icon
                             className="is-light p-side-navigation__icon"
                             name="profile"
@@ -273,11 +248,11 @@ const Navigation: FC = () => {
                       className="p-side-navigation__link"
                       href={docBaseLink}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       title="Documentation"
                     >
                       <Icon
-                        className="is-light p-side-navigation__icon"
+                        className="p-side-navigation__icon"
                         name="information"
                       />{" "}
                       Documentation
@@ -288,7 +263,7 @@ const Navigation: FC = () => {
                       className="p-side-navigation__link"
                       href="https://discuss.linuxcontainers.org"
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       title="Discussion"
                     >
                       <Icon
@@ -303,7 +278,7 @@ const Navigation: FC = () => {
                       className="p-side-navigation__link"
                       href="https://github.com/zabbly/incus/issues/new"
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       title="Report a bug"
                     >
                       <Icon

@@ -1,5 +1,6 @@
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import {
+  ActionButton,
   Button,
   Col,
   Form,
@@ -13,7 +14,6 @@ import * as Yup from "yup";
 import { createInstance, startInstance } from "api/instances";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import SubmitButton from "components/SubmitButton";
 import { LxdImageType, RemoteImage } from "types/image";
 import { isContainerOnlyImage, isVmOnlyImage, LOCAL_ISO } from "util/images";
 import { checkDuplicateName } from "util/helpers";
@@ -74,6 +74,7 @@ import {
 } from "util/instanceValidation";
 import FormFooterLayout from "components/forms/FormFooterLayout";
 import { useToastNotification } from "context/toastNotificationProvider";
+import { useDocs } from "context/useDocs";
 
 export type CreateInstanceFormValues = InstanceDetailsFormValues &
   FormDeviceValues &
@@ -91,6 +92,7 @@ interface PresetFormState {
 }
 
 const CreateInstance: FC = () => {
+  const docBaseLink = useDocs();
   const eventQueue = useEventQueue();
   const location = useLocation() as Location<PresetFormState | null>;
   const navigate = useNavigate();
@@ -200,7 +202,7 @@ const CreateInstance: FC = () => {
     isIsoImage: boolean,
   ) => {
     const instanceLink = (
-      <Link to={`/ui/project/${project}/instances/detail/${instanceName}`}>
+      <Link to={`/ui/project/${project}/instance/${instanceName}`}>
         {instanceName}
       </Link>
     );
@@ -210,15 +212,19 @@ const CreateInstance: FC = () => {
       void startInstance({
         name: instanceName,
         project: project,
-      } as LxdInstance).then((operation) => {
-        eventQueue.set(
-          operation.metadata.id,
-          () => notifyCreatedAndStarted(instanceLink),
-          (msg) => notifyCreatedButStartFailed(instanceLink, new Error(msg)),
-        );
-      });
+      } as LxdInstance)
+        .then((operation) => {
+          eventQueue.set(
+            operation.metadata.id,
+            () => notifyCreatedAndStarted(instanceLink),
+            (msg) => notifyCreatedButStartFailed(instanceLink, new Error(msg)),
+          );
+        })
+        .catch((e: Error) => {
+          notifyCreatedButStartFailed(instanceLink, e);
+        });
     } else {
-      const consoleUrl = `/ui/project/${project}/instances/detail/${instanceName}/console`;
+      const consoleUrl = `/ui/project/${project}/instance/${instanceName}/console`;
       const message = isIsoImage && (
         <>
           <p>Continue the installation process from its console.</p>
@@ -308,12 +314,12 @@ const CreateInstance: FC = () => {
     }
     void formik.setFieldValue("devices", devices);
 
-    if (type) {
-      void formik.setFieldValue("instanceType", type);
-    } else if (isVmOnlyImage(image)) {
+    if (isVmOnlyImage(image)) {
       void formik.setFieldValue("instanceType", "virtual-machine");
     } else if (isContainerOnlyImage(image)) {
       void formik.setFieldValue("instanceType", "container");
+    } else if (type) {
+      void formik.setFieldValue("instanceType", type);
     }
   };
 
@@ -377,6 +383,7 @@ const CreateInstance: FC = () => {
       <Form onSubmit={formik.handleSubmit} className="form">
         <InstanceFormMenu
           active={section}
+          formik={formik}
           setActive={updateSection}
           isConfigDisabled={!formik.values.image}
           isConfigOpen={!!formik.values.image && isConfigOpen}
@@ -417,16 +424,20 @@ const CreateInstance: FC = () => {
 
             {section === YAML_CONFIGURATION && (
               <YamlForm
+                key={`yaml-form-${formik.values.readOnly}`}
                 yaml={getYaml()}
                 setYaml={(yaml) => void formik.setFieldValue("yaml", yaml)}
               >
-                <Notification
-                  severity="caution"
-                  title="Before you edit the YAML"
-                  titleElement="h2"
-                >
-                  Changes will be discarded, when switching back to the guided
-                  forms.
+                <Notification severity="information" title="YAML Configuration">
+                  This is the YAML representation of the instance.
+                  <br />
+                  <a
+                    href={`${docBaseLink}/instances`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Learn more about instances
+                  </a>
                 </Notification>
               </YamlForm>
             )}
@@ -445,20 +456,23 @@ const CreateInstance: FC = () => {
         >
           Cancel
         </Button>
-        <SubmitButton
-          isSubmitting={formik.isSubmitting}
-          isDisabled={hasErrors}
-          buttonLabel="Create"
+        <ActionButton
+          loading={formik.isSubmitting}
+          disabled={hasErrors}
           appearance={isLocalIsoImage ? "positive" : "default"}
           onClick={() => submit(formik.values, false)}
-        />
+        >
+          Create
+        </ActionButton>
         {!isLocalIsoImage && (
-          <SubmitButton
-            isSubmitting={formik.isSubmitting}
-            isDisabled={hasErrors}
-            buttonLabel="Create and start"
+          <ActionButton
+            appearance="positive"
+            loading={formik.isSubmitting}
+            disabled={hasErrors}
             onClick={() => submit(formik.values)}
-          />
+          >
+            Create and start
+          </ActionButton>
         )}
       </FormFooterLayout>
     </BaseLayout>

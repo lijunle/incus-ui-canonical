@@ -1,4 +1,4 @@
-import React, { FC, OptionHTMLAttributes, useState } from "react";
+import { FC, OptionHTMLAttributes, useState } from "react";
 import {
   Button,
   Col,
@@ -37,6 +37,9 @@ const linuxContainersJson =
   "https://images.linuxcontainers.org/streams/v1/images.json";
 const linuxContainersServer = "https://images.linuxcontainers.org";
 
+const imagesLxdJson = "https://images.lxd.canonical.com/streams/v1/images.json";
+const imagesLxdServer = "https://images.lxd.canonical.com/";
+
 const ANY = "any";
 const CONTAINER = "container";
 const VM = "virtual-machine";
@@ -72,6 +75,12 @@ const ImageSelector: FC<Props> = ({ onSelect, onClose }) => {
     queryKey: [queryKeys.images, linuxContainersServer],
     queryFn: () => loadImages(linuxContainersJson, linuxContainersServer),
   });
+
+  const { data: imagesLxdImages = [], isLoading: isImagesLxdLoading } =
+    useQuery({
+      queryKey: [queryKeys.images, imagesLxdServer],
+      queryFn: () => loadImages(imagesLxdJson, imagesLxdServer),
+    });
 
   const { data: localImages = [], isLoading: isLocalImageLoading } = useQuery({
     queryKey: [queryKeys.images, project],
@@ -191,6 +200,10 @@ const ImageSelector: FC<Props> = ({ onSelect, onClose }) => {
         if (item.server === linuxContainersServer) {
           return "Linux Containers";
         }
+        if (item.server === imagesLxdServer) {
+          return "LXD Images";
+        }
+        return "Custom";
       };
 
       return {

@@ -1,10 +1,9 @@
-import React, { FC, useState } from "react";
-import { Button, useNotify } from "@canonical/react-components";
+import { FC, useState } from "react";
+import { ActionButton, Button, useNotify } from "@canonical/react-components";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import SubmitButton from "components/SubmitButton";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkDuplicateName } from "util/helpers";
 import { createClusterBridge, createNetwork } from "api/networks";
@@ -22,7 +21,6 @@ import { fetchClusterMembers } from "api/cluster";
 import BaseLayout from "components/BaseLayout";
 import { MAIN_CONFIGURATION } from "pages/networks/forms/NetworkFormMenu";
 import { slugify } from "util/slugify";
-import { YAML_CONFIGURATION } from "pages/profiles/forms/ProfileFormMenu";
 import FormFooterLayout from "components/forms/FormFooterLayout";
 import { useToastNotification } from "context/toastNotificationProvider";
 
@@ -106,6 +104,10 @@ const CreateNetwork: FC = () => {
     return dumpYaml(payload);
   };
 
+  const updateSection = (newSection: string) => {
+    setSection(slugify(newSection));
+  };
+
   return (
     <BaseLayout title="Create a network" contentClassName="create-network">
       <NotificationRow />
@@ -114,12 +116,7 @@ const CreateNetwork: FC = () => {
         getYaml={getYaml}
         project={project}
         section={section}
-        setSection={(section) => {
-          if (Boolean(formik.values.yaml) && section !== YAML_CONFIGURATION) {
-            void formik.setFieldValue("yaml", undefined);
-          }
-          setSection(slugify(section));
-        }}
+        setSection={updateSection}
       />
       <FormFooterLayout>
         <Button
@@ -128,16 +125,18 @@ const CreateNetwork: FC = () => {
         >
           Cancel
         </Button>
-        <SubmitButton
-          isSubmitting={formik.isSubmitting}
-          isDisabled={
+        <ActionButton
+          appearance="positive"
+          loading={formik.isSubmitting}
+          disabled={
             !formik.isValid ||
             !formik.values.name ||
             (formik.values.networkType === "ovn" && !formik.values.network)
           }
-          buttonLabel="Create"
           onClick={() => void formik.submitForm()}
-        />
+        >
+          Create
+        </ActionButton>
       </FormFooterLayout>
     </BaseLayout>
   );

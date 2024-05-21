@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
@@ -49,6 +49,7 @@ import useEventListener from "@use-it/event-listener";
 import { useProject } from "context/project";
 import { isSnapshotsDisabled } from "util/snapshots";
 import useSortTableData from "util/useSortTableData";
+import { useSupportedFeatures } from "context/useSupportedFeatures";
 
 const StorageVolumes: FC = () => {
   const docBaseLink = useDocs();
@@ -56,6 +57,7 @@ const StorageVolumes: FC = () => {
   const { project } = useParams<{ project: string }>();
   const [searchParams] = useSearchParams();
   const [isSmallScreen, setSmallScreen] = useState(figureCollapsedScreen());
+  const { hasStorageVolumesAll } = useSupportedFeatures();
   const resize = () => {
     setSmallScreen(figureCollapsedScreen());
   };
@@ -84,7 +86,7 @@ const StorageVolumes: FC = () => {
     isLoading,
   } = useQuery({
     queryKey: [queryKeys.volumes, project],
-    queryFn: () => loadVolumes(project),
+    queryFn: () => loadVolumes(project, hasStorageVolumesAll),
   });
 
   if (error) {
@@ -237,7 +239,7 @@ const StorageVolumes: FC = () => {
         },
         {
           content: (
-            <Link to={`/ui/project/${project}/storage/detail/${volume.pool}`}>
+            <Link to={`/ui/project/${project}/storage/pool/${volume.pool}`}>
               {volume.pool}
             </Link>
           ),
@@ -382,7 +384,7 @@ const StorageVolumes: FC = () => {
         <a
           href={`${docBaseLink}/explanation/storage/`}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           Learn more about storage
           <Icon className="external-link-icon" name="external-link" />

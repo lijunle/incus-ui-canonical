@@ -1,3 +1,5 @@
+import { LxdConfigPair } from "./config";
+
 export interface LxdStoragePool {
   config: {
     size?: string;
@@ -24,6 +26,7 @@ export interface LxdStorageVolume {
   config: {
     "block.filesystem"?: string;
     "block.mount_options"?: string;
+    "block.type"?: string;
     "volatile.rootfs.size"?: number;
     "security.shifted"?: string;
     "security.unmapped"?: string;
@@ -37,7 +40,7 @@ export interface LxdStorageVolume {
     "zfs.use_refquota"?: string;
     "zfs.reserve_space"?: string;
     size?: string;
-  };
+  } & LxdConfigPair;
   content_type: LxdStorageVolumeContentType;
   created_at: string;
   description: string;
@@ -77,6 +80,6 @@ export interface UploadState {
 export interface LxdVolumeSnapshot {
   name: string;
   created_at: string;
-  expires_at: string;
+  expires_at?: string;
   description?: string;
 }

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Row, Col } from "@canonical/react-components";
 import CustomLayout from "./CustomLayout";
 
@@ -15,7 +15,7 @@ const NoMatch: FC = () => {
             <a
               href="https://github.com/zabbly/incus/issues/new"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               title="Report a bug"
             >
               Report a bug

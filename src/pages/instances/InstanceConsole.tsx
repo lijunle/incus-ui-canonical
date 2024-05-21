@@ -1,5 +1,6 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import {
+  ActionButton,
   Button,
   ContextualMenu,
   EmptyState,
@@ -10,7 +11,6 @@ import {
 import InstanceGraphicConsole from "./InstanceGraphicConsole";
 import { LxdInstance } from "types/instance";
 import InstanceTextConsole from "./InstanceTextConsole";
-import SubmitButton from "components/SubmitButton";
 import { useInstanceStart } from "util/instanceStart";
 import {
   sendAltF4,
@@ -19,6 +19,7 @@ import {
 } from "../../lib/spice/src/inputs";
 import AttachIsoBtn from "pages/instances/actions/AttachIsoBtn";
 import NotificationRow from "components/NotificationRow";
+import { useSupportedFeatures } from "context/useSupportedFeatures";
 
 interface Props {
   instance: LxdInstance;
@@ -28,6 +29,7 @@ const InstanceConsole: FC<Props> = ({ instance }) => {
   const notify = useNotify();
   const isVm = instance.type === "virtual-machine";
   const [isGraphic, setGraphic] = useState(isVm);
+  const { hasCustomVolumeIso } = useSupportedFeatures();
 
   const isRunning = instance.status === "Running";
 
@@ -76,7 +78,7 @@ const InstanceConsole: FC<Props> = ({ instance }) => {
           </div>
           {isGraphic && isRunning && (
             <div>
-              <AttachIsoBtn instance={instance} />
+              {hasCustomVolumeIso && <AttachIsoBtn instance={instance} />}
               <Button
                 className="u-no-margin--bottom"
                 onClick={() => handleFullScreen()}
@@ -114,12 +116,13 @@ const InstanceConsole: FC<Props> = ({ instance }) => {
           title="Instance stopped"
         >
           <p>Start the instance to access the graphic console.</p>
-          <SubmitButton
-            isSubmitting={isLoading}
-            isDisabled={false}
-            buttonLabel="Start instance"
+          <ActionButton
+            appearance="positive"
+            loading={isLoading}
             onClick={handleStart}
-          />
+          >
+            Start instance
+          </ActionButton>
         </EmptyState>
       )}
       {isGraphic && isRunning && (

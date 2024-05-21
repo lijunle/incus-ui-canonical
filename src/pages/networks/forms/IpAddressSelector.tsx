@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Input, RadioInput } from "@canonical/react-components";
 
 interface Props {
@@ -26,7 +26,7 @@ const IpAddressSelector: FC<Props> = ({ id, address, setAddress }) => {
       </div>
       <div className="ip-address-selector ip-address-custom">
         <RadioInput
-          label=""
+          label="Custom"
           aria-label="custom"
           checked={isCustom}
           onChange={() => setAddress("")}

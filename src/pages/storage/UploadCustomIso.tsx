@@ -1,9 +1,13 @@
-import React, { FC, useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChangeEvent, FC, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
-import { Button, Input, Select, useNotify } from "@canonical/react-components";
-import { createIsoStorageVolume, fetchStoragePools } from "api/storage-pools";
-import SubmitButton from "components/SubmitButton";
+import {
+  ActionButton,
+  Button,
+  Input,
+  useNotify,
+} from "@canonical/react-components";
+import { createIsoStorageVolume } from "api/storage-pools";
 import { useProject } from "context/project";
 import Loader from "components/Loader";
 import NotificationRow from "components/NotificationRow";
@@ -13,6 +17,7 @@ import { humanFileSize } from "util/helpers";
 import UploadCustomImageHint from "pages/storage/UploadCustomImageHint";
 import { useEventQueue } from "context/eventQueue";
 import { useToastNotification } from "context/toastNotificationProvider";
+import StoragePoolSelector from "./StoragePoolSelector";
 
 interface Props {
   onFinish: (name: string, pool: string) => void;
@@ -38,28 +43,6 @@ const UploadCustomIso: FC<Props> = ({ onCancel, onFinish }) => {
 
   const projectName = project?.name ?? "";
 
-  const {
-    data: pools = [],
-    isLoading: arePoolsLoading,
-    error: poolError,
-  } = useQuery({
-    queryKey: [queryKeys.storage],
-    queryFn: () => fetchStoragePools(projectName),
-  });
-
-  if (poolError) {
-    notify.failure("Loading storage pools failed", poolError);
-    onCancel();
-  }
-
-  if (arePoolsLoading) {
-    return <Loader />;
-  }
-
-  if (pools.length > 0 && !pool) {
-    setPool(pools[0].name);
-  }
-
   const handleCancel = () => {
     uploadAbort?.abort();
     onCancel();
@@ -80,23 +63,34 @@ const UploadCustomIso: FC<Props> = ({ onCancel, onFinish }) => {
       projectName,
       setUploadState,
       uploadController,
-    ).then((operation) =>
-      eventQueue.set(
-        operation.metadata.id,
-        () => onFinish(name, pool),
-        (msg) => toastNotify.failure("Image import failed", new Error(msg)),
-        () => {
-          setLoading(false);
-          setUploadState(null);
-          void queryClient.invalidateQueries({
-            queryKey: [queryKeys.storage, pool, queryKeys.volumes, projectName],
-          });
-        },
-      ),
-    );
+    )
+      .then((operation) =>
+        eventQueue.set(
+          operation.metadata.id,
+          () => onFinish(name, pool),
+          (msg) => toastNotify.failure("Image import failed", new Error(msg)),
+          () => {
+            setLoading(false);
+            setUploadState(null);
+            void queryClient.invalidateQueries({
+              queryKey: [
+                queryKeys.storage,
+                pool,
+                queryKeys.volumes,
+                projectName,
+              ],
+            });
+          },
+        ),
+      )
+      .catch((e) => {
+        toastNotify.failure("Image import failed", e);
+        setLoading(false);
+        setUploadState(null);
+      });
   };
 
-  const changeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const changeFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const file = e.target.files[0];
       setFile(file);
@@ -126,19 +120,16 @@ const UploadCustomIso: FC<Props> = ({ onCancel, onFinish }) => {
           disabled={file === null}
           stacked
         />
-        <Select
-          label="Storage pool"
-          id="storagePool"
-          options={pools.map((pool) => ({
-            label: pool.name,
-            value: pool.name,
-          }))}
-          onChange={(e) => {
-            setPool(e.target.value);
-          }}
+        <StoragePoolSelector
+          project={projectName}
           value={pool}
-          disabled={file === null}
-          stacked
+          setValue={setPool}
+          selectProps={{
+            id: "storagePool",
+            label: "Storage pool",
+            disabled: file === null,
+            stacked: true,
+          }}
         />
       </div>
       {uploadState && (
@@ -161,13 +152,15 @@ const UploadCustomIso: FC<Props> = ({ onCancel, onFinish }) => {
         >
           Cancel
         </Button>
-        <SubmitButton
-          isSubmitting={isLoading}
-          isDisabled={!file}
-          buttonLabel="Upload"
+        <ActionButton
+          appearance="positive"
+          loading={isLoading}
+          disabled={!file}
           className="u-no-margin--bottom"
           onClick={importFile}
-        />
+        >
+          Upload
+        </ActionButton>
       </footer>
     </>
   );

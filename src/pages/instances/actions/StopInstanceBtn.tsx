@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { LxdInstance } from "types/instance";
 import { useQueryClient } from "@tanstack/react-query";
 import { stopInstance } from "api/instances";
@@ -27,31 +27,38 @@ const StopInstanceBtn: FC<Props> = ({ instance }) => {
 
   const handleStop = () => {
     instanceLoading.setLoading(instance, "Stopping");
-    void stopInstance(instance, isForce).then((operation) => {
-      eventQueue.set(
-        operation.metadata.id,
-        () =>
-          toastNotify.success(
-            <>
-              Instance <InstanceLink instance={instance} /> stopped.
-            </>,
-          ),
-        (msg) =>
-          toastNotify.failure(
-            "Instance stop failed",
-            new Error(msg),
-            <>
-              Instance <ItemName item={instance} bold />:
-            </>,
-          ),
-        () => {
-          instanceLoading.setFinish(instance);
-          void queryClient.invalidateQueries({
-            queryKey: [queryKeys.instances],
-          });
-        },
-      );
-    });
+    void stopInstance(instance, isForce)
+      .then((operation) => {
+        eventQueue.set(
+          operation.metadata.id,
+          () =>
+            toastNotify.success(
+              <>
+                Instance <InstanceLink instance={instance} /> stopped.
+              </>,
+            ),
+          (msg) =>
+            toastNotify.failure(
+              "Instance stop failed",
+              new Error(msg),
+              <InstanceLink instance={instance} />,
+            ),
+          () => {
+            instanceLoading.setFinish(instance);
+            void queryClient.invalidateQueries({
+              queryKey: [queryKeys.instances],
+            });
+          },
+        );
+      })
+      .catch((e) => {
+        toastNotify.failure(
+          "Instance stop failed",
+          e,
+          <InstanceLink instance={instance} />,
+        );
+        instanceLoading.setFinish(instance);
+      });
   };
 
   return (

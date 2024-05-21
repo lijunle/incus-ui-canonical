@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import {
   EmptyState,
   Icon,
@@ -124,7 +124,7 @@ const ClusterList: FC = () => {
                 <a
                   href={`${docBaseLink}/explanation/clustering/`}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   Learn more about clustering
                   <Icon className="external-link-icon" name="external-link" />
@@ -147,7 +147,7 @@ const ClusterList: FC = () => {
               <a
                 href={`${docBaseLink}/explanation/clustering/`}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 Learn more about clustering
                 <Icon className="external-link-icon" name="external-link" />

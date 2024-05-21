@@ -1,28 +1,33 @@
-import React, { FC, useState } from "react";
-import { Button, useNotify } from "@canonical/react-components";
+import { FC, useState } from "react";
+import { ActionButton, Button, useNotify } from "@canonical/react-components";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   fetchStoragePool,
   updateClusteredPool,
   updatePool,
 } from "api/storage-pools";
-import SubmitButton from "components/SubmitButton";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate, useParams } from "react-router-dom";
 import { LxdStoragePool } from "types/storage";
 import { queryKeys } from "util/queryKeys";
 import StoragePoolForm, {
+  toStoragePool,
   StoragePoolFormValues,
-  storagePoolFormToPayload,
 } from "./forms/StoragePoolForm";
 import { checkDuplicateName } from "util/helpers";
 import { useClusterMembers } from "context/useClusterMembers";
 import FormFooterLayout from "components/forms/FormFooterLayout";
-import { getStoragePoolEditValues } from "util/storagePoolEdit";
-import { MAIN_CONFIGURATION } from "./forms/StoragePoolFormMenu";
+import { toStoragePoolFormValues } from "util/storagePoolForm";
+import {
+  MAIN_CONFIGURATION,
+  YAML_CONFIGURATION,
+} from "./forms/StoragePoolFormMenu";
 import { slugify } from "util/slugify";
 import { useToastNotification } from "context/toastNotificationProvider";
+import { yamlToObject } from "util/yaml";
+import { useSettings } from "context/useSettings";
+import { getSupportedStorageDrivers } from "util/storageOptions";
 
 interface Props {
   pool: LxdStoragePool;
@@ -31,6 +36,7 @@ interface Props {
 const EditStoragePool: FC<Props> = ({ pool }) => {
   const navigate = useNavigate();
   const notify = useNotify();
+  const { data: settings } = useSettings();
   const toastNotify = useToastNotification();
   const queryClient = useQueryClient();
   const { project, section } = useParams<{
@@ -57,10 +63,12 @@ const EditStoragePool: FC<Props> = ({ pool }) => {
   });
 
   const formik = useFormik<StoragePoolFormValues>({
-    initialValues: getStoragePoolEditValues(pool),
+    initialValues: toStoragePoolFormValues(pool),
     validationSchema: StoragePoolSchema,
     onSubmit: (values) => {
-      const savedPool = storagePoolFormToPayload(values);
+      const savedPool = values.yaml
+        ? (yamlToObject(values.yaml) as LxdStoragePool)
+        : toStoragePool(values);
 
       const mutation =
         clusterMembers.length > 0
@@ -76,7 +84,7 @@ const EditStoragePool: FC<Props> = ({ pool }) => {
             project,
             member,
           );
-          void formik.setValues(getStoragePoolEditValues(updatedPool));
+          void formik.setValues(toStoragePoolFormValues(updatedPool));
         })
         .catch((e) => {
           notify.failure("Storage pool update failed", e);
@@ -90,19 +98,24 @@ const EditStoragePool: FC<Props> = ({ pool }) => {
     },
   });
 
-  const setSection = (newSection: string) => {
-    const baseUrl = `/ui/project/${project}/storage/detail/${pool.name}/configuration`;
+  const updateSection = (newSection: string) => {
+    const baseUrl = `/ui/project/${project}/storage/pool/${pool.name}/configuration`;
     newSection === MAIN_CONFIGURATION
       ? navigate(baseUrl)
       : navigate(`${baseUrl}/${slugify(newSection)}`);
   };
 
+  const supportedStorageDrivers = getSupportedStorageDrivers(settings);
+  const defaultFormSection = supportedStorageDrivers.has(formik.values.driver)
+    ? slugify(MAIN_CONFIGURATION)
+    : slugify(YAML_CONFIGURATION);
+
   return (
     <div className="edit-storage-pool">
       <StoragePoolForm
         formik={formik}
-        section={section ?? slugify(MAIN_CONFIGURATION)}
-        setSection={setSection}
+        section={section ?? defaultFormSection}
+        setSection={updateSection}
       />
       <FormFooterLayout>
         {formik.values.readOnly ? (
@@ -116,16 +129,18 @@ const EditStoragePool: FC<Props> = ({ pool }) => {
           <>
             <Button
               appearance="base"
-              onClick={() => formik.setValues(getStoragePoolEditValues(pool))}
+              onClick={() => formik.setValues(toStoragePoolFormValues(pool))}
             >
               Cancel
             </Button>
-            <SubmitButton
-              isSubmitting={formik.isSubmitting}
-              isDisabled={!formik.isValid}
-              buttonLabel="Save changes"
+            <ActionButton
+              appearance="positive"
+              loading={formik.isSubmitting}
+              disabled={!formik.isValid}
               onClick={() => void formik.submitForm()}
-            />
+            >
+              Save changes
+            </ActionButton>
           </>
         )}
       </FormFooterLayout>

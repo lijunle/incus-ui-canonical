@@ -18,9 +18,11 @@ import { getProjectKey } from "util/projectConfigFields";
 import { StorageVolumeFormValues } from "pages/storage/forms/StorageVolumeForm";
 import { fetchStoragePool } from "api/storage-pools";
 import { getVolumeKey } from "util/storageVolume";
-import { getNetworkDefault } from "util/networks";
+import { getNetworkKey, networkFormTypeToOptionKey } from "util/networks";
 import { getPoolKey, storagePoolFormDriverToOptionKey } from "./storagePool";
 import { StoragePoolFormValues } from "pages/storage/forms/StoragePoolForm";
+import { useSupportedFeatures } from "context/useSupportedFeatures";
+import { NetworkFormValues } from "pages/networks/forms/NetworkForm";
 
 export interface ConfigRowMetadata {
   value?: string;
@@ -41,20 +43,27 @@ export const getConfigRowMetadata = (
     case "storageVolume":
       return getStorageVolumeRowMetadata(values, name);
     case "network":
-      return getNetworkRowMetadata(name);
+      return getNetworkRowMetadata(values, name);
     case "storagePool":
       return getStoragePoolRowMetadata(values, name);
   }
+};
+
+const getConfigOptions = () => {
+  const { hasMetadataConfiguration } = useSupportedFeatures();
+  const { data: configOptions } = useQuery({
+    queryKey: [queryKeys.configOptions],
+    queryFn: () => fetchConfigOptions(hasMetadataConfiguration),
+  });
+
+  return configOptions;
 };
 
 const getInstanceRowMetadata = (
   values: InstanceAndProfileFormValues | ProjectFormValues,
   name: string,
 ): ConfigRowMetadata => {
-  const { data: configOptions } = useQuery({
-    queryKey: [queryKeys.configOptions],
-    queryFn: fetchConfigOptions,
-  });
+  const configOptions = getConfigOptions();
 
   const configFields = toConfigFields(configOptions?.configs.instance ?? {});
   const configKey = getInstanceKey(name);
@@ -88,10 +97,7 @@ const getProjectRowMetadata = (
   values: ProjectFormValues,
   name: string,
 ): ConfigRowMetadata => {
-  const { data: configOptions } = useQuery({
-    queryKey: [queryKeys.configOptions],
-    queryFn: fetchConfigOptions,
-  });
+  const configOptions = getConfigOptions();
 
   const configFields = toConfigFields(configOptions?.configs.project ?? {});
   const configKey = getProjectKey(name);
@@ -115,10 +121,7 @@ const getStorageVolumeRowMetadata = (
     return { value: pool.config[poolField], source: `${pool.name} pool` };
   }
 
-  const { data: configOptions } = useQuery({
-    queryKey: [queryKeys.configOptions],
-    queryFn: fetchConfigOptions,
-  });
+  const configOptions = getConfigOptions();
 
   const optionKey = storagePoolFormDriverToOptionKey(pool?.driver ?? "zfs");
   const configFields = toConfigFields(configOptions?.configs[optionKey] ?? {});
@@ -133,8 +136,23 @@ const getStorageVolumeRowMetadata = (
   return { value: lxdDefault, source: "LXD", configField };
 };
 
-const getNetworkRowMetadata = (name: string): ConfigRowMetadata => {
-  return getNetworkDefault(name);
+const getNetworkRowMetadata = (
+  values: NetworkFormValues,
+  name: string,
+): ConfigRowMetadata => {
+  const configOptions = getConfigOptions();
+
+  const optionKey = networkFormTypeToOptionKey(values.networkType);
+  const configFields = toConfigFields(configOptions?.configs[optionKey] ?? {});
+  const configKey = getNetworkKey(name);
+  const configField = configFields.find((item) => item.key === configKey);
+
+  const lxdDefault =
+    configField?.default && configField?.default.length > 0
+      ? configField?.default
+      : "-";
+
+  return { value: lxdDefault, source: "LXD", configField };
 };
 
 // NOTE: this is only relevant for Ceph RBD storage pools at the moment
@@ -142,10 +160,7 @@ const getStoragePoolRowMetadata = (
   values: StoragePoolFormValues,
   name: string,
 ): ConfigRowMetadata => {
-  const { data: configOptions } = useQuery({
-    queryKey: [queryKeys.configOptions],
-    queryFn: fetchConfigOptions,
-  });
+  const configOptions = getConfigOptions();
 
   const optionKey = storagePoolFormDriverToOptionKey(values.driver);
   const configFields = toConfigFields(configOptions?.configs[optionKey] ?? {});

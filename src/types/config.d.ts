@@ -27,6 +27,8 @@ export interface LxdConfigOptions {
   configs: {
     cluster: LxcConfigOptionCategories;
     instance: LxcConfigOptionCategories;
+    "network-bridge": LxcConfigOptionCategories;
+    "network-ovn": LxcConfigOptionCategories;
     project: LxcConfigOptionCategories;
     server: LxcConfigOptionCategories;
     "storage-btrfs": LxcConfigOptionCategories;
@@ -35,6 +37,7 @@ export interface LxdConfigOptions {
     "storage-cephobject": LxcConfigOptionCategories;
     "storage-dir": LxcConfigOptionCategories;
     "storage-lvm": LxcConfigOptionCategories;
+    "storage-powerflex": LxcConfigOptionCategories;
     "storage-zfs": LxcConfigOptionCategories;
   };
 }

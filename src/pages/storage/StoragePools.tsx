@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import {
   EmptyState,
   Icon,
@@ -86,7 +86,7 @@ const StoragePools: FC = () => {
       columns: [
         {
           content: (
-            <Link to={`/ui/project/${project}/storage/detail/${pool.name}`}>
+            <Link to={`/ui/project/${project}/storage/pool/${pool.name}`}>
               {pool.name}
             </Link>
           ),
@@ -187,7 +187,7 @@ const StoragePools: FC = () => {
         <a
           href={`${docBaseLink}/explanation/storage/`}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           Learn more about storage
           <Icon className="external-link-icon" name="external-link" />

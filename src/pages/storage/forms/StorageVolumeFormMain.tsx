@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Col, Input, Label, Row, Select } from "@canonical/react-components";
 import { FormikProps } from "formik/dist/types";
 import {
@@ -31,6 +31,7 @@ const StorageVolumeFormMain: FC<Props> = ({ formik, project }) => {
                 project={project}
                 value={formik.values.pool}
                 setValue={(val) => void formik.setFieldValue("pool", val)}
+                hidePoolsWithUnsupportedDrivers
               />
             </>
           )}
@@ -83,6 +84,7 @@ const StorageVolumeFormMain: FC<Props> = ({ formik, project }) => {
               if (e.target.value === "block") {
                 void formik.setFieldValue("block_filesystem", undefined);
                 void formik.setFieldValue("block_mount_options", undefined);
+                void formik.setFieldValue("block_type", undefined);
                 void formik.setFieldValue("security_shifted", undefined);
                 void formik.setFieldValue("security_unmapped", undefined);
               }
@@ -100,7 +102,6 @@ const StorageVolumeFormMain: FC<Props> = ({ formik, project }) => {
               label: "Security shifted",
               name: "security_shifted",
               defaultValue: "",
-              help: "Enable id shifting overlay (allows attach to multiple isolated instances)",
               disabled: formik.values.security_unmapped === "true",
               disabledReason:
                 "This setting can't be changed while security unmapped is set to true",
@@ -112,7 +113,6 @@ const StorageVolumeFormMain: FC<Props> = ({ formik, project }) => {
               label: "Security unmapped",
               name: "security_unmapped",
               defaultValue: "",
-              help: "Disable id mapping for the volume",
               disabled: formik.values.security_shifted === "true",
               disabledReason:
                 "This setting can't be changed while security shifted is set to true",

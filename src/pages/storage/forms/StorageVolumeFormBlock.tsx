@@ -1,15 +1,17 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Input, Select } from "@canonical/react-components";
 import { FormikProps } from "formik/dist/types";
 import { StorageVolumeFormValues } from "pages/storage/forms/StorageVolumeForm";
 import { getConfigurationRow } from "components/ConfigurationRow";
 import ScrollableConfigurationTable from "components/forms/ScrollableConfigurationTable";
+import { powerFlex } from "util/storageOptions";
 
 interface Props {
   formik: FormikProps<StorageVolumeFormValues>;
+  poolDriver?: string;
 }
 
-const StorageVolumeFormBlock: FC<Props> = ({ formik }) => {
+const StorageVolumeFormBlock: FC<Props> = ({ formik, poolDriver }) => {
   return (
     <ScrollableConfigurationTable
       rows={[
@@ -55,7 +57,7 @@ const StorageVolumeFormBlock: FC<Props> = ({ formik }) => {
                   For a list of available options visit{" "}
                   <a
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     href="https://manpages.ubuntu.com/manpages/jammy/en/man8/mount.8.html#filesystem-independent%20mount%20options"
                   >
                     mount manpages
@@ -65,6 +67,31 @@ const StorageVolumeFormBlock: FC<Props> = ({ formik }) => {
             />
           ),
         }),
+
+        ...(poolDriver === powerFlex
+          ? [
+              getConfigurationRow({
+                formik,
+                label: "Block type",
+                name: "block_type",
+                defaultValue: "thin",
+                children: (
+                  <Select
+                    options={[
+                      {
+                        label: "thin",
+                        value: "thin",
+                      },
+                      {
+                        label: "thick",
+                        value: "thick",
+                      },
+                    ]}
+                  />
+                ),
+              }),
+            ]
+          : []),
       ]}
     />
   );

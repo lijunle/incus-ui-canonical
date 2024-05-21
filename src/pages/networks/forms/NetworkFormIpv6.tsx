@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Input, Select, Textarea } from "@canonical/react-components";
 import { FormikProps } from "formik/dist/types";
 import { getConfigurationRow } from "components/ConfigurationRow";
@@ -30,7 +30,6 @@ const NetworkFormIpv6: FC<Props> = ({ formik }) => {
                 formik,
                 name: "ipv6_dhcp_expiry",
                 label: "IPv6 DHCP expiry",
-                help: "When to expire DHCP leases",
                 defaultValue: "",
                 children: <Input type="text" />,
               }),
@@ -39,7 +38,6 @@ const NetworkFormIpv6: FC<Props> = ({ formik }) => {
                 formik,
                 name: "ipv6_dhcp_ranges",
                 label: "IPv6 DHCP ranges",
-                help: "Comma-separated list of IPv6 ranges to use for DHCP (FIRST-LAST format)",
                 defaultValue: "",
                 children: <Textarea />,
               }),
@@ -76,7 +74,6 @@ const NetworkFormIpv6: FC<Props> = ({ formik }) => {
                 formik,
                 name: "ipv6_ovn_ranges",
                 label: "IPv6 OVN ranges",
-                help: "Comma-separated list of IPv6 ranges to use for child OVN network routers (FIRST-LAST format)",
                 defaultValue: "",
                 children: <Textarea />,
               }),

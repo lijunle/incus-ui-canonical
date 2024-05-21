@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { updateInstance } from "api/instances";
 import { LxdInstance } from "types/instance";
 import { useParams } from "react-router-dom";
@@ -41,34 +41,39 @@ const AttachIsoBtn: FC<Props> = ({ instance }) => {
       instance,
       values,
     ) as LxdInstance;
-    void updateInstance(instanceMinusIso, project ?? "").then((operation) => {
-      const instanceLink = instanceLinkFromOperation({
-        operation,
-        project,
+    void updateInstance(instanceMinusIso, project ?? "")
+      .then((operation) => {
+        const instanceLink = instanceLinkFromOperation({
+          operation,
+          project,
+        });
+        eventQueue.set(
+          operation.metadata.id,
+          () =>
+            toastNotify.success(
+              <>
+                ISO <b>{attachedIso?.source ?? ""}</b> detached from{" "}
+                {instanceLink}
+              </>,
+            ),
+          (msg) =>
+            toastNotify.failure(
+              "Detaching ISO failed.",
+              new Error(msg),
+              instanceLink,
+            ),
+          () => {
+            void queryClient.invalidateQueries({
+              queryKey: [queryKeys.instances, instance.name, project],
+            });
+            setLoading(false);
+          },
+        );
+      })
+      .catch((e) => {
+        setLoading(false);
+        toastNotify.failure("Detaching ISO failed.", e);
       });
-      eventQueue.set(
-        operation.metadata.id,
-        () =>
-          toastNotify.success(
-            <>
-              ISO <b>{attachedIso?.source ?? ""}</b> detached from{" "}
-              {instanceLink}
-            </>,
-          ),
-        (msg) =>
-          toastNotify.failure(
-            "Detaching ISO failed.",
-            new Error(msg),
-            instanceLink,
-          ),
-        () => {
-          void queryClient.invalidateQueries({
-            queryKey: [queryKeys.instances, instance.name, project],
-          });
-          setLoading(false);
-        },
-      );
-    });
   };
 
   const handleSelect = (image: RemoteImage) => {
@@ -78,33 +83,38 @@ const AttachIsoBtn: FC<Props> = ({ instance }) => {
     const isoDevice = remoteImageToIsoDevice(image);
     values.devices.push(isoDevice);
     const instancePlusIso = getInstancePayload(instance, values) as LxdInstance;
-    void updateInstance(instancePlusIso, project ?? "").then((operation) => {
-      const instanceLink = instanceLinkFromOperation({
-        operation,
-        project,
+    void updateInstance(instancePlusIso, project ?? "")
+      .then((operation) => {
+        const instanceLink = instanceLinkFromOperation({
+          operation,
+          project,
+        });
+        eventQueue.set(
+          operation.metadata.id,
+          () =>
+            toastNotify.success(
+              <>
+                ISO <b>{image.aliases}</b> attached to {instanceLink}
+              </>,
+            ),
+          (msg) =>
+            toastNotify.failure(
+              "Attaching ISO failed.",
+              new Error(msg),
+              instanceLink,
+            ),
+          () => {
+            void queryClient.invalidateQueries({
+              queryKey: [queryKeys.instances, instance.name, project],
+            });
+            setLoading(false);
+          },
+        );
+      })
+      .catch((e) => {
+        setLoading(false);
+        toastNotify.failure("Attaching ISO failed.", e);
       });
-      eventQueue.set(
-        operation.metadata.id,
-        () =>
-          toastNotify.success(
-            <>
-              ISO <b>{image.aliases}</b> attached to {instanceLink}
-            </>,
-          ),
-        (msg) =>
-          toastNotify.failure(
-            "Attaching ISO failed.",
-            new Error(msg),
-            instanceLink,
-          ),
-        () => {
-          void queryClient.invalidateQueries({
-            queryKey: [queryKeys.instances, instance.name, project],
-          });
-          setLoading(false);
-        },
-      );
-    });
   };
 
   return attachedIso ? (

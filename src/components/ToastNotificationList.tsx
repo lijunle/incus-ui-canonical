@@ -7,7 +7,7 @@ import {
   GroupedNotificationCount,
   ToastNotificationType,
 } from "context/toastNotificationProvider";
-import React, { FC, useLayoutEffect, useRef, useState } from "react";
+import { FC, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { iconLookup, severityOrder } from "util/notifications";
 import Animate from "./Animate";
@@ -106,6 +106,7 @@ const ToastNotificationList: FC<Props> = ({
           </button>
         );
       }
+      return null;
     });
 
     return (

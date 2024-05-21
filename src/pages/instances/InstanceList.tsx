@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -635,7 +635,7 @@ const InstanceList: FC = () => {
                 <a
                   href={`${docBaseLink}/howto/instances_create/`}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   How to create instances
                   <Icon className="external-link-icon" name="external-link" />

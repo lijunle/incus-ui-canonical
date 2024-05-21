@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Input, Notification } from "@canonical/react-components";
 import { FormikProps } from "formik/dist/types";
 import { getConfigurationRow } from "components/ConfigurationRow";
@@ -46,7 +46,7 @@ const StorageVolumeFormSnapshots: FC<Props> = ({ formik }) => {
                     <a
                       href={`${docBaseLink}/reference/instance_options/#instance-options-snapshots-names`}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                     >
                       Automatic snapshot names
                     </a>

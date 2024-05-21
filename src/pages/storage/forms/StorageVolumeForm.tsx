@@ -1,4 +1,4 @@
-import React, { FC, ReactNode, useEffect } from "react";
+import { FC, ReactNode, useEffect } from "react";
 import { Col, Form, Input, Row, useNotify } from "@canonical/react-components";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
@@ -19,6 +19,7 @@ import StorageVolumeFormZFS from "pages/storage/forms/StorageVolumeFormZFS";
 import { FormikProps } from "formik/dist/types";
 import {
   getFilesystemVolumeFormFields,
+  getVolumeConfigKeys,
   getVolumeKey,
   getZfsVolumeFormFields,
 } from "util/storageVolume";
@@ -29,6 +30,7 @@ import {
 } from "types/storage";
 import { slugify } from "util/slugify";
 import { driversWithFilesystemSupport } from "util/storageOptions";
+import { getUnhandledKeyValues } from "util/formFields";
 
 export interface StorageVolumeFormValues {
   name: string;
@@ -44,6 +46,7 @@ export interface StorageVolumeFormValues {
   snapshots_schedule?: string;
   block_filesystem?: string;
   block_mount_options?: string;
+  block_type?: string;
   zfs_blocksize?: string;
   zfs_block_mode?: string;
   zfs_delegate?: string;
@@ -58,9 +61,14 @@ export interface StorageVolumeFormValues {
 export const volumeFormToPayload = (
   values: StorageVolumeFormValues,
   project: string,
+  volume?: LxdStorageVolume,
 ): LxdStorageVolume => {
   const hasValidSize = values.size?.match(/^\d/);
-  return {
+  const unhandledVolumeConfigs = getUnhandledKeyValues(
+    volume?.config || {},
+    getVolumeConfigKeys(),
+  );
+  const payload = {
     name: values.name,
     config: {
       size: hasValidSize ? values.size : undefined,
@@ -71,12 +79,14 @@ export const volumeFormToPayload = (
       [getVolumeKey("snapshots_schedule")]: values.snapshots_schedule,
       [getVolumeKey("block_filesystem")]: values.block_filesystem,
       [getVolumeKey("block_mount_options")]: values.block_mount_options,
+      [getVolumeKey("block_type")]: values.block_type,
       [getVolumeKey("zfs_blocksize")]: values.zfs_blocksize,
       [getVolumeKey("zfs_block_mode")]: values.zfs_block_mode,
       [getVolumeKey("zfs_delegate")]: values.zfs_delegate,
       [getVolumeKey("zfs_remove_snapshots")]: values.zfs_remove_snapshots,
       [getVolumeKey("zfs_use_refquota")]: values.zfs_use_refquota,
       [getVolumeKey("zfs_reserve_space")]: values.zfs_reserve_space,
+      ...unhandledVolumeConfigs,
     },
     project,
     type: values.volumeType,
@@ -85,6 +95,17 @@ export const volumeFormToPayload = (
     location: "",
     created_at: "",
     pool: values.pool,
+  };
+
+  const allPayloadKeys = Object.keys(payload);
+  const unhandledVolumeMainConfigs = getUnhandledKeyValues(
+    volume || {},
+    new Set(allPayloadKeys),
+  );
+
+  return {
+    ...payload,
+    ...unhandledVolumeMainConfigs,
   };
 };
 
@@ -169,7 +190,7 @@ const StorageVolumeForm: FC<Props> = ({ formik, section, setSection }) => {
             <StorageVolumeFormSnapshots formik={formik} />
           )}
           {section === slugify(FILESYSTEM) && (
-            <StorageVolumeFormBlock formik={formik} />
+            <StorageVolumeFormBlock formik={formik} poolDriver={poolDriver} />
           )}
           {section === slugify(ZFS) && <StorageVolumeFormZFS formik={formik} />}
         </Col>

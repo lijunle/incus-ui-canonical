@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "util/queryKeys";
 import { MainTable } from "@canonical/react-components";
@@ -63,7 +63,7 @@ const InstanceOverviewNetworks: FC<Props> = ({ instance, onFailure }) => {
           {
             content: (
               <Link
-                to={`/ui/project/${instance.project}/networks/detail/${network.name}`}
+                to={`/ui/project/${instance.project}/network/${network.name}`}
                 title={`Network ${network.name}`}
               >
                 {network.name}

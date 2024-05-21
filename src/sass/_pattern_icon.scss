@@ -8,3 +8,8 @@
     @include lxdui-icon-sidebar-collapse;
   }
 }
+
+.p-icon--info--notification {
+  @extend %icon;
+  @include vf-icon-info-coloured-themed;
+}

@@ -10,7 +10,7 @@ interface LxdImageAlias {
 export interface LxdImage {
   fingerprint: string;
   public: boolean;
-  properties: {
+  properties?: {
     description: string;
     os: string;
     release: string;
@@ -60,6 +60,7 @@ export interface RemoteImage {
   server?: string;
   volume?: LxdStorageVolume;
   type?: LxdImageType;
+  fingerprint?: string;
 }
 
 export interface RemoteImageList {

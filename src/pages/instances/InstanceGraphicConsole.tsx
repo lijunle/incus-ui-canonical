@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as SpiceHtml5 from "../../lib/spice/src/main";
 import { connectInstanceVga } from "api/instances";
@@ -14,6 +14,12 @@ declare global {
   interface Window {
     spice_connection?: SpiceHtml5.SpiceMainConn;
   }
+}
+
+interface SpiceWheelEvent extends CustomEvent {
+  detail: {
+    wheelEvent: WheelEvent;
+  };
 }
 
 interface Props {
@@ -42,7 +48,7 @@ const InstanceGraphicConsole: FC<Props> = ({
   };
 
   const handleResize = () => {
-    updateMaxHeight("spice-wrapper", undefined, 10);
+    updateMaxHeight("spice-wrapper");
     SpiceHtml5.handle_resize();
   };
 
@@ -108,6 +114,17 @@ const InstanceGraphicConsole: FC<Props> = ({
 
   useEventListener("resize", handleResize);
   useEffect(handleResize, [notify.notification?.message]);
+
+  useEventListener("spice-wheel", (e) => {
+    if (!spiceRef.current?.parentElement || !Object.hasOwn(e, "detail")) {
+      return;
+    }
+    const wheelEvent = (e as SpiceWheelEvent).detail.wheelEvent;
+    spiceRef.current.parentElement.scrollBy(
+      wheelEvent.deltaX,
+      wheelEvent.deltaY,
+    );
+  });
 
   useEffect(() => {
     notify.clear();
