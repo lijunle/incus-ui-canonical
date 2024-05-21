@@ -108,7 +108,6 @@ See [LICENSE](LICENSE) and each file.  My code is under GPL3.
 
 # TODO
 
-* Update to newer lxd-ui. (0.7)
 * License check and other packaging details including dependencies.
 * Make this build to be compliant for the uploading to Debian repository. (Need help here)
 
